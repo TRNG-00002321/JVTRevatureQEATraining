@@ -1,0 +1,39 @@
+Garbage collection in Python is an automatic memory management process that reclaims memory 
+occupied by objects that are no longer in use.
+ 
+Python primarily uses two mechanisms for this: 
+1) Reference Counting:
+Every object in Python maintains a reference count, 
+which tracks how many references (variables, data structures, etc.) point to it.
+When an object's reference count drops to zero, it means there are no more references to that 
+object, and its memory can be immediately deallocated.
+This is the primary and most efficient method for garbage collection in Python.
+
+2) Generational Garbage Collection (for cyclic references):
+Reference counting alone cannot handle circular references, 
+where two or more objects refer to each other, 
+even if they are no longer accessible from the rest of the program. 
+In such cases, their reference counts would never reach zero.
+To address this, Python employs a generational garbage collector, accessible through the gc module.
+This collector categorizes objects into three generations (0, 1, and 2) 
+based on their age and survival of previous collection cycles.
+Newly created objects start in Generation 0. 
+If they survive a collection in Generation 0, they move to Generation 1, 
+and then to Generation 2 if they survive a collection in Generation 1.
+The garbage collector checks Generation 0 most frequently and Generation 2 least frequently, 
+as older objects are less likely to become unreachable.
+This generational approach helps optimize the collection process by focusing on newer objects, 
+which are more likely to be short-lived.
+
+Manual Control:
+While Python's garbage collection is mostly automatic, you can interact with it using the gc module:
+gc.collect(): Manually triggers a garbage collection cycle.
+gc.disable(): Disables the automatic generational garbage collector.
+gc.enable(): Enables the automatic generational garbage collector.
+gc.set_threshold(threshold0, threshold1, threshold2): 
+	Sets the thresholds for triggering garbage collection in each generation.
+
+Summary:
+Python's garbage collection system efficiently manages memory by 
+combining reference counting for immediate deallocation of most objects 
+and a generational collector to handle complex circular references.

@@ -1,0 +1,32 @@
+# Strings in Python
+
+- Created with single or double quotes
+- Can create multiline strings with triple quotes
+
+# Key Characteristics
+- Immutable: Cannot change a string's chars once created
+	- Any operation that seemingly modifies a string actually creates a new string
+- Indexable: Individual chars can be accessed via zero-based indexing (e.g., str[0], str[1], str[2], etc.)
+	- Negative indexing accesses chars from the end (e.g., str[-1] for the last character)
+- Slicing: Can extract substrings via slicing
+	- ex: my_string[start:end]
+
+# Common operations and methods
+* Refer to demo scripts for demonstration of methods in Python code
+* Refer to https://docs.python.org/3.3/library/stdtypes.html#string-methods 
+	for official documentation on string methods in Python
+- len(): Returns the length of the string
+- Concatenation: Can join strings together using the + operator
+- Repetition: Can repeat strings using the * operator
+- lower(): Changes the characters to lowercase
+- upper(): Changes the characters to uppercase
+- capitalize(): Changes the characters to lowercase while capitalizing the first character
+- strip(): Removes all leading and trailing whitespace if any from the string
+- lstrip(): Removes any leading whitespace from the string
+- rstrip(): Removes any trailing whitespace from the string
+- replace(): Substitutes occurrences of a specified substring with another
+- split(): Divides the string into a list of substrings based on a delimiter
+- join(): Joins elements of an iterable into a single string
+- find(): Returns the lowest index where a substring occurs within the string/slice 
+	- Returns -1 if substring not found
+- index(): Like find(), but raises a ValueError exception when the substring is not found

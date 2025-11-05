@@ -8,7 +8,7 @@ def print_input(input, num):
     print()
 
     # alt solution:
-    # print(str(input) * num)
+    # print(str(input) * int(num))
 
 a = "a"
 n = 5

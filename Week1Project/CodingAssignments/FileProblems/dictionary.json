@@ -1,0 +1,60 @@
+[
+    "name",
+    "age",
+    "city",
+    "isStudent",
+    "courses",
+    {
+        "name": "Jeff",
+        "age": 35,
+        "city": "New York",
+        "isStudent": false,
+        "courses": [
+            "Math",
+            "Science"
+        ]
+    },
+    {
+        "name": "Alice",
+        "age": 20,
+        "city": "New York",
+        "isStudent": true,
+        "courses": [
+            "Math",
+            "Science"
+        ]
+    },
+    {
+        "name": "John",
+        "age": 23,
+        "city": "Dallas",
+        "isStudent": true,
+        "courses": [
+            "English",
+            "Science"
+        ]
+    },
+    {
+        "name": "Jimmy",
+        "age": 24,
+        "city": "Plano",
+        "isStudent": true,
+        "courses": [
+            "Physics",
+            "English",
+            "US History",
+            "Software Engineering"
+        ]
+    },
+    {
+        "name": "Susan",
+        "age": 22,
+        "city": "Salt Lake City",
+        "isStudent": true,
+        "courses": [
+            "3D Modeling",
+            "Computer Science",
+            "Electrical Engineering"
+        ]
+    }
+]

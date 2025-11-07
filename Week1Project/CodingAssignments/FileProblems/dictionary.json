@@ -1,9 +1,4 @@
 [
-    "name",
-    "age",
-    "city",
-    "isStudent",
-    "courses",
     {
         "name": "Jeff",
         "age": 35,
@@ -55,6 +50,16 @@
             "3D Modeling",
             "Computer Science",
             "Electrical Engineering"
+        ]
+    },
+    {
+        "name": "Max",
+        "age": 29,
+        "city": "Atlanta",
+        "isStudent": true,
+        "courses": [
+            "Math",
+            "English"
         ]
     }
 ]

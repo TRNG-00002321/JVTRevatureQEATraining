@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Task Creation</title>
+</head>
+<body>
+<form action="http://localhost:5000/create" method="post">
+    <p>Describe the task : </p>
+    <input type="text" name="description"><br/>
+    <label for="isComplete" class="toggle-label">
+        <span class="toggle-switch"></span>
+        <span class="toggle-text">Already Completed</span>
+    </label>
+    <input type="checkbox" id="isComplete" name="isComplete" class="toggle-checkbox" value="on"><br/><br/>
+    <input type="submit" value="Add task"><br/>
+</form>
+</body>
+</html>

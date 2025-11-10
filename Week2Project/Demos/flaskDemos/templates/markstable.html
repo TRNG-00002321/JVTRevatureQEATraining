@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Score Table</title>
+</head>
+<body>
+<table>
+    <tr>
+        <th>Name</th>
+        <th>Physics</th>
+        <th>Chemistry</th>
+        <th>Maths</th>
+    </tr>
+    {% for user in scores %}
+    <tr>
+        <td>{{user.name}}</td>
+        <td>{{user.physics}}</td>
+        <td>{{user.chemistry}}</td>
+        <td>{{user.maths}}</td>
+    </tr>
+    {% endfor %}
+</table>
+</body>
+</html>

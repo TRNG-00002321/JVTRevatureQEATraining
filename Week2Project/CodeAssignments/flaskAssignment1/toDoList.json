@@ -1,0 +1,26 @@
+[
+    {
+        "description": "Water the roses",
+        "isComplete": false
+    },
+    {
+        "description": "Study notes",
+        "isComplete": false
+    },
+    {
+        "description": "Finish demo scripts",
+        "isComplete": true
+    },
+    {
+        "description": "Drink water",
+        "isComplete": true
+    },
+    {
+        "description": "Eat lunch",
+        "isComplete": true
+    },
+    {
+        "description": "Love self",
+        "isComplete": true
+    }
+]

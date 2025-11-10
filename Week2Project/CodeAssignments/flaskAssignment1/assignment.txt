@@ -1,0 +1,6 @@
+Using your to-do list manager, implement and perform CRUD operations.
+C - Create
+R - Read
+U - Update
+D - Delete
+Basically, incorporate what we have learned about flask into the to-do list manager project.

@@ -1,0 +1,42 @@
+[
+    {
+        "id": 1,
+        "description": "1 + 1 = ?"
+    },
+    {
+        "id": 2,
+        "description": "True/False?: Humans need food and water to live."
+    },
+    {
+        "id": 3,
+        "description": "What color is an orange?"
+    },
+    {
+        "id": 4,
+        "description": "Which language should you use for today's coding challenge?"
+    },
+    {
+        "id": 5,
+        "description": "What is the dress code on Mondays?"
+    },
+    {
+        "id": 6,
+        "description": "What is the dress code on Tuesdays through Fridays?"
+    },
+    {
+        "id": 7,
+        "description": "5.0 / 2.0 = ?"
+    },
+    {
+        "id": 8,
+        "description": "5 ** 2 = ?"
+    },
+    {
+        "id": 9,
+        "description": "5 ** 3 = ?"
+    },
+    {
+        "id": 10,
+        "description": "True/False?: If you get a phone call from your boss, you must do whatever they tell you to do."
+    }
+]

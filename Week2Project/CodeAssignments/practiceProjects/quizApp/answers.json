@@ -1,0 +1,42 @@
+[
+    {
+        "id": 1,
+        "answer": "2"
+    },
+    {
+        "id": 2,
+        "answer": "True"
+    },
+    {
+        "id": 3,
+        "answer": "Orange"
+    },
+    {
+        "id": 4,
+        "answer": "Python"
+    },
+    {
+        "id": 5,
+        "answer": "Business professional"
+    },
+    {
+        "id": 6,
+        "answer": "Business casual"
+    },
+    {
+        "id": 7,
+        "answer": "2.5"
+    },
+    {
+        "id": 8,
+        "answer": "25"
+    },
+    {
+        "id": 9,
+        "answer": "125"
+    },
+    {
+        "id": 10,
+        "answer": "False"
+    }
+]

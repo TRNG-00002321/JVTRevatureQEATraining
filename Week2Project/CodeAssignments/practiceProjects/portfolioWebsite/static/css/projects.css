@@ -1,0 +1,46 @@
+.my-banner{
+    display: flex;
+    flex-direction: column;
+    width: 240px;
+    height: 600px;
+    align-items: flex-start;
+    align-content: space-evenly;
+    padding: 20px;
+}
+.my-clickable-div{
+    background-color: lightblue;
+    cursor: pointer;
+}
+.no-bullets{
+    list-style-type: none;
+}
+.container{
+    display: flex; /* Makes the container a flex container */
+    align-items: flex-start;
+    align-content: flex-start;
+    padding: 20px;
+}
+.flex-container {
+    display: flex; /* Makes the container a flex container */
+    justify-content: space-evenly; /* Distributes items with space around them */
+    align-items: flex-start; /* Aligns items to the start of the cross axis */
+    align-content: space-evenly;
+    padding: 10px; /* Adds space between flex items */
+}
+.box {
+    background-color: lightblue;
+    padding: 20px;
+    border: 1px solid blue;
+}
+table {
+    border-collapse: collapse;
+    border-width: 1px;
+    border-style: dashed;
+    border-color: black;
+}
+th, td {
+    border-width: 1px;
+    border-style: solid;
+    border-color: black;
+    padding: 10px;
+}

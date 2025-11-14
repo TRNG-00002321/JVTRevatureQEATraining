@@ -14,6 +14,13 @@ from Employee.employeeDBManager import *
 
 def login():
     is_logged_in = False  # Flag indicates whether the user is logged in; set to True on a successful login
+    while not is_logged_in:
+        name_input = input("Enter username: ").capitalize().strip()
+        pass_input = input("Enter password: ").strip()
+        is_logged_in = verify_user(name_input, pass_input)
+        if not is_logged_in:
+            print("Invalid username or password.")
+    return name_input, pass_input
 
 def submit():
     pass
@@ -54,7 +61,7 @@ def print_database():
     print(f"\nusers:\n{users}\nexpenses:\n{expenses}\napprovals:\n{approvals}\n")
 
 if __name__ == '__main__':
-    login()
+    username, password = login()
     is_done = False  # Flag indicates whether the user is done; the application should quit when this is True
     while not is_done:
         print_main_menu()

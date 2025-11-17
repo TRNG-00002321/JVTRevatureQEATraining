@@ -8,7 +8,10 @@ public abstract class User {
     private String password;
     private String role;
 
-    public User(int id, String name, String password, String role){
+    public User(){
+    }
+
+    public User(int id, String name, String password, String role) {
         this.id = id;
         this.name = name;
         this.password = password;
@@ -45,6 +48,16 @@ public abstract class User {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", password='" + password + '\'' +
+                ", role='" + role + '\'' +
+                '}';
     }
 
     public abstract boolean isEmployee();

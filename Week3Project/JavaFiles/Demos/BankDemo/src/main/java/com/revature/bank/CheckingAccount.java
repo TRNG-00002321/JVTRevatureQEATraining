@@ -1,6 +1,6 @@
 package com.revature.bank;
 
-public class CheckingAccount extends BankAccount{
+public class CheckingAccount extends BankAccount {
     public CheckingAccount(){
     }
 
@@ -14,7 +14,7 @@ public class CheckingAccount extends BankAccount{
     }
 
     @Override
-    public double withdraw(double amount){
+    public double withdraw(double amount) {
         double surcharge = (amount * 0.01) / 100;
         amount += surcharge;
         super.setBalance(getBalance() - amount);

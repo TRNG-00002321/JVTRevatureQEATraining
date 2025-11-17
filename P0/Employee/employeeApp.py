@@ -17,12 +17,12 @@ def login():
     while not is_logged_in:
         name_input = input("Enter username: ").capitalize().strip()
         pass_input = input("Enter password: ").strip()
-        df = verify_user(name_input, pass_input)
-        is_logged_in =  df is not None
+        user_data = verify_user(name_input, pass_input)
+        is_logged_in = user_data is not None
         if not is_logged_in:
             print("Invalid username or password.")
     print(f"\nHello, {name_input}!")
-    return df
+    return user_data
 
 def submit(df):
     expense_amt, expense_desc, expense_date = get_expense_details()

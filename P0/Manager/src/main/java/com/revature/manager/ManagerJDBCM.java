@@ -9,5 +9,5 @@ TODO
 [] Generate reports by employee, category, or date so that I can analyze spending trends and make informed decisions.
  */
 
-public class ManagerDBManager {
+public class ManagerJDBCM {
 }

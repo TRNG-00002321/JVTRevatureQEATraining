@@ -34,6 +34,8 @@ def view_status(df):
     user_id = df.at[0, "id"]
     view_df = view_expenses_statuses(user_id)
 
+    print(view_df)
+
     for name, group in view_df.groupby("status"):
         print(f"\nGroup: {name}")
         print(group)
@@ -59,7 +61,8 @@ def delete(df):
 # Displayed result should probably be sorted by date
 def history(df):
     user_id = df.at[0, "id"]
-    history_df = view_expenses_history(user_id).sort_values(by=["date"], inplace=True)
+    history_df = view_expenses_history(user_id)
+    sorted_history = history_df.sort_values(by=["date"], inplace=True)
     print(history_df)
 
 # Date returned shall be in the following format: YYYY-MM-DD

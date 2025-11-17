@@ -39,7 +39,7 @@ def submit_expense(user_id, amount, description, date):
             print("Error when inserting expense: cur.lastrowid is None")
 
 def view_expenses_statuses(user_id):
-    query = "SELECT e.id, e.amount, e.description, e.date, a.status, a.comment FROM expenses e JOIN approvals a ON e.id = a.expense_id WHERE e.user_id = ?;"
+    query = "SELECT e.id, e.amount, e.description, e.date, a.status, a.comment FROM expenses AS e JOIN approvals AS a ON e.id = a.expense_id WHERE e.user_id = ?;"
     with sql.connect(db) as conn:
         cur = conn.cursor()
         cur.execute(query, (user_id, ))
@@ -49,7 +49,7 @@ def view_expenses_statuses(user_id):
     return df
 
 def view_expenses_pending(user_id):
-    query = "SELECT e.id, e.amount, e.description, e.date FROM expenses e JOIN approvals a ON e.id = a.expense_id WHERE e.user_id = ? AND a.status = ?;"
+    query = "SELECT e.id, e.amount, e.description, e.date FROM expenses AS e JOIN approvals AS a ON e.id = a.expense_id WHERE e.user_id = ? AND a.status = ?;"
     with sql.connect(db) as conn:
         cur = conn.cursor()
         cur.execute(query, (user_id, "pending"))
@@ -59,7 +59,7 @@ def view_expenses_pending(user_id):
     return df
 
 def view_expenses_history(user_id):
-    query = "SELECT e.id, e.amount, e.description, e.date, a.status, a.comment FROM expenses e JOIN approvals a ON e.id = a.expense_id WHERE e.user_id = ? AND (a.status = ? OR a.status = ?);"
+    query = "SELECT e.id, e.amount, e.description, e.date, a.status, a.comment FROM expenses AS e JOIN approvals AS a ON e.id = a.expense_id WHERE e.user_id = ? AND (a.status = ? OR a.status = ?);"
     with sql.connect(db) as conn:
         cur = conn.cursor()
         cur.execute(query, (user_id, "approved", "denied"))

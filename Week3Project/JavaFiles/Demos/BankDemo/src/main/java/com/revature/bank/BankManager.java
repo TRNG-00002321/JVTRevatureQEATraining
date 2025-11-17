@@ -10,11 +10,29 @@ public class BankManager {
         CheckingAccount checking1 = new CheckingAccount("C001", "Jeremiah", 15000);
         System.out.println(checking1);
 
-        savings1.deposit(6000);
-        System.out.println(savings1);
-        savings1.withdraw(500);
-        checking1.withdraw(1000);
-        System.out.println(savings1);
-        System.out.println(checking1);
+        try {
+            savings1.deposit(6000);
+            System.out.println(savings1);
+            savings1.withdraw(500);
+            checking1.withdraw(90000);
+        } catch (ArithmeticException e) {
+            System.out.println(e.getMessage());
+        } catch (InsufficientFundsException e) {
+            System.out.println("Insufficient funds.");
+        }
+        finally {
+            try {
+                checking1.withdraw(1000);
+                savings1.deposit(-200);
+            } catch (ArithmeticException e) {
+                System.out.println(e.getMessage());
+            } catch (InsufficientFundsException e) {
+                System.out.println("Insufficient funds.");
+            }
+            finally {
+                System.out.println(savings1);
+                System.out.println(checking1);
+            }
+        }
     }
 }

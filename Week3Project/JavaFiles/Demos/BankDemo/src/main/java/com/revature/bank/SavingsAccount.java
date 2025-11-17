@@ -14,9 +14,17 @@ public class SavingsAccount extends BankAccount implements SimpleInterest {
     }
 
     @Override
-    public double withdraw(double amt) {
-        super.setBalance(getBalance() - amt);
-        return getBalance();
+    public double withdraw(double amt) throws ArithmeticException, InsufficientFundsException {
+        if (amt < 0) {
+            throw new ArithmeticException("Cannot withdraw a negative amount.");
+        }
+        else if (getBalance() - amt < 5000) {
+            throw new InsufficientFundsException();
+        }
+        else {
+            super.setBalance(getBalance() - amt);
+            return getBalance();
+        }
     }
 
     @Override

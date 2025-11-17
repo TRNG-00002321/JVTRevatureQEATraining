@@ -47,10 +47,14 @@ public abstract class BankAccount {
                 '}';
     }
 
-    public double deposit(double amt){
+    public double deposit(double amt) throws ArithmeticException {
+        if (amt < 0) {
+            throw new ArithmeticException("Cannot deposit a negative amount.");
+        }
+
         setBalance(balance + amt);
         return balance;
     }
 
-    public abstract double withdraw(double amt);
+    public abstract double withdraw(double amt) throws ArithmeticException, InsufficientFundsException;
 }

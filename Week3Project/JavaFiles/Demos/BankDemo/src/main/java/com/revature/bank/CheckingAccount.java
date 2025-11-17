@@ -14,10 +14,18 @@ public class CheckingAccount extends BankAccount {
     }
 
     @Override
-    public double withdraw(double amount) {
-        double surcharge = (amount * 0.01) / 100;
-        amount += surcharge;
-        super.setBalance(getBalance() - amount);
-        return getBalance();
+    public double withdraw(double amount) throws ArithmeticException, InsufficientFundsException {
+        if (amount < 0) {
+            throw new ArithmeticException("Cannot withdraw a negative amount.");
+        }
+        else if (getBalance() - amount < 5000) {
+            throw new InsufficientFundsException();
+        }
+        else {
+            double surcharge = (amount * 0.01) / 100;
+            amount += surcharge;
+            super.setBalance(getBalance() - amount);
+            return getBalance();
+        }
     }
 }

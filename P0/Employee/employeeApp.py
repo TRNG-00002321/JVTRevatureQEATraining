@@ -7,10 +7,10 @@ from Employee.employeeDBManager import *
 # TODO
 # [X] Log in with my credentials so that I can securely access my expense reports.
 # [X] Submit a new expense with details about amount and description so that I can request reimbursement or track spending.
-# [] View the status of my submitted expenses so that I know whether they are pending, approved, or denied.
+# [X] View the status of my submitted expenses so that I know whether they are pending, approved, or denied.
 # [X] Edit expenses that are still pending so that I can correct mistakes before they are reviewed.
 # [X] Delete expenses that are still pending so that I can correct mistakes before they are reviewed.
-# [] History of all my approved and denied expenses so that I can track my financial activity over time.
+# [X] History of all my approved and denied expenses so that I can track my financial activity over time.
 
 def login():
     is_logged_in = False  # Flag indicates whether the user is logged in; set to True on a successful login
@@ -22,6 +22,7 @@ def login():
         if not is_logged_in:
             print("Invalid username or password.")
     print(f"\nHello, {name_input}!")
+    # print(user_data)
     return user_data
 
 def submit(df):
@@ -33,8 +34,6 @@ def submit(df):
 def view_status(df):
     user_id = df.at[0, "id"]
     view_df = view_expenses_statuses(user_id)
-
-    print(view_df)
 
     for name, group in view_df.groupby("status"):
         print(f"\nGroup: {name}")
@@ -96,7 +95,8 @@ def get_date():
 
 def get_expense_id(user_id):
     pending_expenses_df = view_expenses_pending(user_id)
-    valid_expense_ids = pending_expenses_df['id']
+    valid_expense_ids = pending_expenses_df['id'].tolist()
+    # print(f"valid_expense_ids = {valid_expense_ids}")
     while True:
         print(pending_expenses_df)
         try:
@@ -125,7 +125,7 @@ def get_expense_edits():
     while True:
         try:
             amt_str = input("Enter new amount: ")
-            if amt_str is None:
+            if amt_str == "":
                 amt = None
             else:
                 amt = round(float(amt_str), 2)
@@ -133,10 +133,12 @@ def get_expense_edits():
         except ValueError:
             print("Invalid amount.")
     desc = input("Enter expense description: ").strip()
+    if desc == "":
+        desc = None
     while True:
         try:
             date_str = input("Enter expense date: ")
-            if date_str is None:
+            if date_str == "":
                 break
             date_parts = date_str.split("-", 2)
             expense_year = int(date_parts[0])
@@ -159,7 +161,7 @@ def get_expense_edits():
                 print(f"{"Invalid month." if not is_valid_month else ""} {"Invalid day." if not is_valid_day else ""}")
         except ValueError:
             print("Invalid date.")
-    if date_str is not None:
+    if date_str != "":
         date = f"{expense_year:0{4}}-{expense_month:0{2}}-{expense_day:0{2}}"
     else:
         date = None

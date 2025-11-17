@@ -27,36 +27,36 @@ def submit_expense(user_id, amount, description, date):
     query = "INSERT INTO expenses(user_id, amount, description, date) VALUES(?, ?, ?, ?);"
     with sql.connect(db) as conn:
         cur = conn.cursor()
-        cur.execute(query, (user_id, amount, description, date))
+        cur.execute(query, (int(user_id), float(amount), description, date))
         conn.commit()
 
         if cur.lastrowid is not None:
             expense_id = cur.lastrowid
             query = "INSERT INTO approvals(expense_id, status) VALUES(?, ?);"
-            cur.execute(query, (expense_id, "pending"))
+            cur.execute(query, (int(expense_id), "pending"))
             conn.commit()
         else:
             print("Error when inserting expense: cur.lastrowid is None")
 
 def view_expenses_statuses(user_id):
-    query = """SELECT e.id, e.amount, e.description, e.date, a.status, a.comment 
-        FROM expenses AS e JOIN approvals AS a 
-        ON e.id = a.expense_id 
-        WHERE e.user_id = ?;
+    query = """SELECT e.id, e.user_id, e.amount, e.description, e.date, a.status, a.comment 
+        FROM expenses AS e 
+        JOIN approvals AS a ON e.id = a.expense_id
+        WHERE user_id = ?;
         """
     with sql.connect(db) as conn:
-        df = pd.read_sql(query, conn, params=(user_id,))
+        df = pd.read_sql(query, conn, params=(int(user_id),))
     return df
 
 def view_expenses_pending(user_id):
     query = """SELECT e.id, e.amount, e.description, e.date 
-        FROM expenses AS e JOIN approvals AS a 
-        ON e.id = a.expense_id 
+        FROM expenses AS e 
+        JOIN approvals AS a ON e.id = a.expense_id 
         WHERE e.user_id = ? AND a.status = ?;
         """
     with sql.connect(db) as conn:
         cur = conn.cursor()
-        cur.execute(query, (user_id, "pending"))
+        cur.execute(query, (int(user_id), "pending"))
         expenses = cur.fetchall()
         column_names = [description[0] for description in cur.description]
     df = pd.DataFrame(expenses, columns=column_names)
@@ -64,13 +64,13 @@ def view_expenses_pending(user_id):
 
 def view_expenses_history(user_id):
     query = """SELECT e.id, e.amount, e.description, e.date, a.status, a.comment 
-        FROM expenses AS e JOIN approvals AS a 
-        ON e.id = a.expense_id 
+        FROM expenses AS e 
+        JOIN approvals AS a ON e.id = a.expense_id 
         WHERE e.user_id = ? AND (a.status = ? OR a.status = ?);
         """
     with sql.connect(db) as conn:
         cur = conn.cursor()
-        cur.execute(query, (user_id, "approved", "denied"))
+        cur.execute(query, (int(user_id), "approved", "denied"))
         expenses = cur.fetchall()
         column_names = [description[0] for description in cur.description]
     df = pd.DataFrame(expenses, columns=column_names)
@@ -79,7 +79,7 @@ def view_expenses_history(user_id):
 def edit_expense(expense_id, amount=None, description=None, date=None):
     if amount is None or description is None or date is None:
         with sql.connect(db) as conn:
-            df = pd.read_sql("SELECT * FROM expenses WHERE id = ?;", conn, params=(expense_id,))
+            df = pd.read_sql("SELECT * FROM expenses WHERE id = ?;", conn, params=(int(expense_id),))
     if amount is None:
         amount = df.loc[0, 'amount']
     if description is None:

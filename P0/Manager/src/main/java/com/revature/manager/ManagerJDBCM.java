@@ -10,10 +10,10 @@ import java.util.ArrayList;
 /*
 TODO
 [X] Log in securely so that I can access and manage employee expense reports.
-[X] View a list of all pending expenses so that I can review them efficiently.
-[X] Approve or deny submitted expenses so that I can manage reimbursements appropriately.
-[X] Add comments to expense decisions so that employees understand the reasoning behind approvals or denials.
-[X] Generate reports by employee, category, or date so that I can analyze spending trends and make informed decisions.
+[X] View a list of all pending expenses
+[X] Approve or deny submitted expenses
+[X] Add comments to expense decisions
+[X] Generate reports by employee, category, or date
  */
 
 public class ManagerJDBCM {

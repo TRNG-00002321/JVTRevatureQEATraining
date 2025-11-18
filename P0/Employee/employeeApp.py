@@ -25,7 +25,7 @@ def login():
         is_logged_in = user_data is not None
         if not is_logged_in:
             print("Invalid username or password.")
-            logging.warning(f"Invalid login: username=\"{name_input}\", password=\"{pass_input}\"")
+            logging.error(f"Invalid login: username=\"{name_input}\", password=\"{pass_input}\"")
     print(f"\nHello, {name_input}!")
     # print(user_data)
     logging.info(f"User {user_data.at[0, "id"]} ({name_input}) logged in.")
@@ -65,6 +65,7 @@ def delete(df):
             break
         except ValueError:
             print("Invalid id.")
+            logging.error("Invalid id entered by user during a deletion.")
     delete_expense(expense_id)
     logging.info(f"Deletion of expense {expense_id} called by user {user_id}.")
 
@@ -100,8 +101,10 @@ def get_date():
                 break
             else:
                 print(f"{"Invalid month." if not is_valid_month else ""} {"Invalid day." if not is_valid_day else ""}")
+                logging.error("Invalid date entered by user.")
         except ValueError:
             print("Invalid date.")
+            logging.error("Invalid date entered by user.")
     date = f"{expense_year:0{4}}-{expense_month:0{2}}-{expense_day:0{2}}"
     return date
 
@@ -115,10 +118,12 @@ def get_expense_id(user_id):
             expense_id = int(input("Enter the id of the expense you wish to edit: ").strip())
             if expense_id not in valid_expense_ids:
                 print("Invalid id.")
+                logging.error(f"User {user_id} entered invalid expense ID.")
             else:
                 break
         except ValueError:
             print("Invalid id.")
+            logging.error(f"User {user_id} entered invalid expense ID.")
     return expense_id
 
 def get_expense_details():
@@ -129,6 +134,7 @@ def get_expense_details():
             break
         except ValueError:
             print("Invalid amount.")
+            logging.error("Invalid amount entered by user.")
     desc = input("Enter expense description: ").strip()
     date = get_date()   # YYYY-MM-DD
     return amt, desc, date
@@ -144,6 +150,7 @@ def get_expense_edits():
             break
         except ValueError:
             print("Invalid amount.")
+            logging.error("Invalid amount entered by user.")
     desc = input("Enter expense description: ").strip()
     if desc == "":
         desc = None
@@ -171,8 +178,10 @@ def get_expense_edits():
                 break
             else:
                 print(f"{"Invalid month." if not is_valid_month else ""} {"Invalid day." if not is_valid_day else ""}")
+                logging.error("Invalid date entered by user.")
         except ValueError:
             print("Invalid date.")
+            logging.error("Invalid date entered by user.")
     if date_str != "":
         date = f"{expense_year:0{4}}-{expense_month:0{2}}-{expense_day:0{2}}"
     else:
@@ -233,3 +242,4 @@ if __name__ == '__main__':
                 is_done = True
             case _:
                 print("Error: Input not recognized. Please enter a valid choice.")
+                logging.error(f"User {user_df.at[0, "id"]} attempted invalid menu choice.")

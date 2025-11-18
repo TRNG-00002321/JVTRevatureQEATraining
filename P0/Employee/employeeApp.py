@@ -2,6 +2,7 @@
 # Version: 0.0.0
 
 import pandas as pd
+import logging
 from Employee.employeeDBManager import *
 
 # TODO
@@ -12,6 +13,9 @@ from Employee.employeeDBManager import *
 # [X] Delete expenses that are still pending so that I can correct mistakes before they are reviewed.
 # [X] History of all my approved and denied expenses so that I can track my financial activity over time.
 
+logging.basicConfig(filename='employeeApp.log', level=logging.INFO,
+                    format='%(asctime)s - %(levelname)s - %(message)s')
+
 def login():
     is_logged_in = False  # Flag indicates whether the user is logged in; set to True on a successful login
     while not is_logged_in:
@@ -21,14 +25,17 @@ def login():
         is_logged_in = user_data is not None
         if not is_logged_in:
             print("Invalid username or password.")
+            logging.warning(f"Invalid login: username=\"{name_input}\", password=\"{pass_input}\"")
     print(f"\nHello, {name_input}!")
     # print(user_data)
+    logging.info(f"User {user_data.at[0, "id"]} ({name_input}) logged in.")
     return user_data
 
 def submit(df):
     expense_amt, expense_desc, expense_date = get_expense_details()
     user_id = df.at[0, "id"]
     submit_expense(user_id, expense_amt, expense_desc, expense_date)
+    logging.info(f"Submitted new expense: user_id={user_id}, amount={expense_amt}, description={expense_desc}, date={expense_date}")
 
 # Displayed result should probably be sorted by status
 def view_status(df):
@@ -39,10 +46,13 @@ def view_status(df):
         print(f"\nGroup: {name}")
         print(group)
 
+    logging.info(f"User {user_id} called view_status().")
+
 def edit(df):
     expense_id = get_expense_id(df.at[0, "id"])
     expense_amt, expense_desc, expense_date = get_expense_edits()
     edit_expense(expense_id, expense_amt, expense_desc, expense_date)
+    logging.info(f"Edited expense {expense_id}: user_id={df.at[0, "id"]}, amount={expense_amt}, description={expense_desc}, date={expense_date}")
 
 def delete(df):
     user_id = df.at[0, "id"]
@@ -56,6 +66,7 @@ def delete(df):
         except ValueError:
             print("Invalid id.")
     delete_expense(expense_id)
+    logging.info(f"Deletion of expense {expense_id} called by user {user_id}.")
 
 # Displayed result should probably be sorted by date
 def history(df):
@@ -63,6 +74,7 @@ def history(df):
     history_df = view_expenses_history(user_id)
     sorted_history = history_df.sort_values(by=["date"], inplace=True)
     print(history_df)
+    logging.info(f"Displayed history of user {user_id}.")
 
 # Date returned shall be in the following format: YYYY-MM-DD
 def get_date():
@@ -188,6 +200,7 @@ def print_database():
     pd.set_option('display.max_columns', None)
     pd.set_option('display.max_colwidth', None)
     print(f"\nusers:\n{users}\nexpenses:\n{expenses}\napprovals:\n{approvals}\n")
+    logging.info("Printed database.")
 
 if __name__ == '__main__':
     user_df = login()
@@ -208,6 +221,7 @@ if __name__ == '__main__':
                 history(user_df)
             case "6":
                 is_done = True
+                logging.info("Quitting employee application.")
             case "demo":
                 print_database()
                 view_status(user_df)

@@ -3,12 +3,14 @@ package com.revature.manager;
 import org.sqlite.*;
 
 import java.sql.*;
+import java.time.LocalDate;
+import java.util.List;
 import java.util.ArrayList;
 
 /*
 TODO
-[] Log in securely so that I can access and manage employee expense reports.
-[] View a list of all pending expenses so that I can review them efficiently.
+[X] Log in securely so that I can access and manage employee expense reports.
+[X] View a list of all pending expenses so that I can review them efficiently.
 [] Approve or deny submitted expenses so that I can manage reimbursements appropriately.
 [] Add comments to expense decisions so that employees understand the reasoning behind approvals or denials.
 [] Generate reports by employee, category, or date so that I can analyze spending trends and make informed decisions.
@@ -62,7 +64,7 @@ public class ManagerJDBCM {
 
     public boolean verifyLogin(String username, String password) {
         String sql = "SELECT * FROM users WHERE username = ? AND password = ?;";
-        ArrayList<User> users = new ArrayList<>();
+        List<User> users = new ArrayList<>();
 
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setString(1, username);
@@ -94,5 +96,40 @@ public class ManagerJDBCM {
         }
 
         return false;
+    }
+
+    public List<Expense> getPendingExpenses() {
+        String sql = "SELECT e.id, e.user_id, e.amount, e.description, e.date FROM expenses AS e JOIN approvals AS a ON e.id = a.expense_id WHERE a.status = ?;";
+        List<Expense> pendingExpenses = new ArrayList<>();
+        // SELECT e.id, e.user_id, e.amount, e.description, e.date
+        //        FROM expenses AS e
+        //        JOIN approvals AS a ON e.id = a.expense_id
+        //        WHERE a.status = ?;
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, "pending");
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) {
+                int expenseId = rs.getInt("id");
+                int userId = rs.getInt("user_id");
+                double amount = rs.getDouble("amount");
+                String desc = rs.getString("description");
+                String dateString = rs.getString("date");
+                LocalDate date = LocalDate.parse(dateString);
+
+                pendingExpenses.add(new Expense(expenseId, userId, amount, desc, date));
+            }
+        } catch (SQLException e) {
+            System.out.println("Error querying SQLite database connection: " + e.getMessage());
+        }
+
+        return pendingExpenses;
+    }
+
+    public void approveExpense(int expenseId, int reviewerId, String comment, LocalDate reviewDate) {
+        //
+    }
+
+    public void denyExpense(int expenseId, int reviewerId, String comment, LocalDate reviewDate) {
+        //
     }
 }

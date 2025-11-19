@@ -1,6 +1,8 @@
 package com.revature.manager;
 
 import java.util.Scanner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /*
 TODO
@@ -12,6 +14,7 @@ TODO
  */
 
 public class ManagerApp {
+    public static final Logger logger = LoggerFactory.getLogger(ManagerApp.class);
     public static final Scanner scanner = new Scanner(System.in);
     public static ManagerJDBCM dbManager = new ManagerJDBCM();
 
@@ -28,10 +31,10 @@ public class ManagerApp {
                 break;
             }
             catch (NullPointerException e) {
-                System.out.println("Invalid login. Wrong username or password.");
-                // TODO Log this error
+                logger.error("Invalid login. Wrong username or password.");
             }
         }
+        logger.info("User {} ({}) logged in.", current.getId(), current.getName());
         return current;
     }
 
@@ -70,7 +73,6 @@ public class ManagerApp {
     }
 
     public static void main(String[] args) {
-        // TODO: Instantiate logging for Manager application
         Manager current = login();
         String userInput = "";
         String header = "========= ACTIONS =========";
@@ -105,8 +107,7 @@ public class ManagerApp {
                 case "5":
                     break;
                 default:
-                    System.out.println("Invalid option.");
-                    // TODO Log this event as an error
+                    logger.error("Current user entered an invalid menu option.");
                     break;
             }
         }

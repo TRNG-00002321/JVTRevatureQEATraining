@@ -62,7 +62,7 @@ public class ManagerJDBCM {
         setConnection();
     }
 
-    public boolean verifyLogin(String username, String password) {
+    public Manager verifyLogin(String username, String password) throws NullPointerException{
         String sql = "SELECT * FROM users WHERE username = ? AND password = ?;";
         List<User> users = new ArrayList<>();
 
@@ -91,11 +91,11 @@ public class ManagerJDBCM {
 
         for (User e : users){
             if (e.getName().equals(username) && e.getPassword().equals(password)) {
-                return true;
+                return (Manager) e;
             }
         }
 
-        return false;
+        throw new NullPointerException();
     }
 
     public List<Expense> getAllExpenses() {

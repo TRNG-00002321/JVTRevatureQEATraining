@@ -16,9 +16,23 @@ public class ManagerApp {
     public static ManagerJDBCM dbManager = new ManagerJDBCM();
 
     public static Manager login() {
-        //
+        Manager current;
+        while (true) {
+            System.out.print("Enter username: ");
+            String name = scanner.nextLine();
+            System.out.print("Enter password: ");
+            String pass = scanner.nextLine();
 
-        return null;
+            try {
+                current = dbManager.verifyLogin(name, pass);
+                break;
+            }
+            catch (NullPointerException e) {
+                System.out.println("Invalid login. Wrong username or password.");
+                // TODO Log this error
+            }
+        }
+        return current;
     }
 
     public static void viewPending() {

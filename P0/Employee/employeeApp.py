@@ -1,58 +1,48 @@
 # Originally created: 11/11/2025
-# Version: 0.0.0
+# Version: 1.0.2
 
-import pandas as pd
 import logging
+from datetime import datetime, date
 from Employee.employeeDBManager import *
 
-# TODO
-# [X] Log in with my credentials so that I can securely access my expense reports.
-# [X] Submit a new expense with details about amount and description so that I can request reimbursement or track spending.
-# [X] View the status of my submitted expenses so that I know whether they are pending, approved, or denied.
-# [X] Edit expenses that are still pending so that I can correct mistakes before they are reviewed.
-# [X] Delete expenses that are still pending so that I can correct mistakes before they are reviewed.
-# [X] History of all my approved and denied expenses so that I can track my financial activity over time.
-
-logging.basicConfig(filename='employeeApp.log', level=logging.INFO,
-                    format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(filename='employeeApp.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def login():
-    is_logged_in = False  # Flag indicates whether the user is logged in; set to True on a successful login
-    while not is_logged_in:
+    while True:
         name_input = input("Enter username: ").capitalize().strip()
         pass_input = input("Enter password: ").strip()
         user_data = verify_user(name_input, pass_input)
-        is_logged_in = user_data is not None
-        if not is_logged_in:
+        if user_data is None:
             print("Invalid username or password.")
             logging.error(f"Invalid login: username=\"{name_input}\", password=\"{pass_input}\"")
+        else:
+            break
     print(f"\nHello, {name_input}!")
-    # print(user_data)
     logging.info(f"User {user_data.at[0, "id"]} ({name_input}) logged in.")
     return user_data
 
 def submit(df):
-    expense_amt, expense_desc, expense_date = get_expense_details()
+    e_amt, e_desc, e_date = get_expense_details()
     user_id = df.at[0, "id"]
-    submit_expense(user_id, expense_amt, expense_desc, expense_date)
-    logging.info(f"Submitted new expense: user_id={user_id}, amount={expense_amt}, description={expense_desc}, date={expense_date}")
+    submit_expense(user_id, e_amt, e_desc, e_date)
+    logging.info(f"Submitted new expense: user_id={user_id}, amount={e_amt}, description={e_desc}, date={e_date}")
 
-# Displayed result should probably be sorted by status
+# Displayed result should probably be sorted by status then by date
 def view_status(df):
     user_id = df.at[0, "id"]
     view_df = view_expenses_statuses(user_id)
 
     for name, group in view_df.groupby("status"):
-        print(f"\nGroup: {name}")
-        print(group)
+        print(f"\n{str(name).capitalize()} Expenses:")
+        print(group.sort_values(by=["date"]))
 
     logging.info(f"User {user_id} called view_status().")
 
 def edit(df):
-    expense_id = get_expense_id(df.at[0, "id"])
-    expense_amt, expense_desc, expense_date = get_expense_edits()
-    edit_expense(expense_id, expense_amt, expense_desc, expense_date)
-    logging.info(f"Edited expense {expense_id}: user_id={df.at[0, "id"]}, amount={expense_amt}, description={expense_desc}, date={expense_date}")
+    e_id = get_expense_id(df.at[0, "id"])
+    e_amt, e_desc, e_date = get_expense_edits()
+    edit_expense(e_id, e_amt, e_desc, e_date)
+    logging.info(f"Edited expense {e_id}: user_id={df.at[0, "id"]}, amount={e_amt}, description={e_desc}, date={e_date}")
 
 def delete(df):
     user_id = df.at[0, "id"]
@@ -66,14 +56,19 @@ def delete(df):
         except ValueError:
             print("Invalid id.")
             logging.error("Invalid id entered by user during a deletion.")
-    delete_expense(expense_id)
-    logging.info(f"Deletion of expense {expense_id} called by user {user_id}.")
+
+    if expense_id in valid_expense_ids:
+        delete_expense(expense_id)
+        logging.info(f"Deletion of expense {expense_id} called by user {user_id}.")
+    else:
+        print("Invalid id.")
+        logging.error(f"Expense {expense_id} not valid for deletion.")
 
 # Displayed result should probably be sorted by date
 def history(df):
     user_id = df.at[0, "id"]
     history_df = view_expenses_history(user_id)
-    sorted_history = history_df.sort_values(by=["date"], inplace=True)
+    history_df.sort_values(by=["date"], inplace=True)
     print(history_df)
     logging.info(f"Displayed history of user {user_id}.")
 
@@ -81,7 +76,7 @@ def history(df):
 def get_date():
     while True:
         try:
-            date_str = input("Enter expense date: ").strip()
+            date_str = input("Enter expense date (YYYY-MM-dd): ").strip()
             date_parts = date_str.split("-", 2)
             expense_year = int(date_parts[0])
             expense_month = int(date_parts[1])
@@ -98,15 +93,21 @@ def get_date():
             else:
                 is_valid_day = 0 < expense_day <= 31
             if is_valid_month and is_valid_day:
-                break
+                input_date = f"{expense_year:0{4}}-{expense_month:0{2}}-{expense_day:0{2}}"
+                date_object = datetime.strptime(input_date, "%Y-%m-%d").date()
+                today = date.today()
+                if date_object <= today:
+                    break
+                else:
+                    print("Cannot enter a future date.")
+                    logging.error("Future date entered by user.")
             else:
                 print(f"{"Invalid month." if not is_valid_month else ""} {"Invalid day." if not is_valid_day else ""}")
                 logging.error("Invalid date entered by user.")
         except ValueError:
             print("Invalid date.")
             logging.error("Invalid date entered by user.")
-    date = f"{expense_year:0{4}}-{expense_month:0{2}}-{expense_day:0{2}}"
-    return date
+    return input_date
 
 def get_expense_id(user_id):
     pending_expenses_df = view_expenses_pending(user_id)
@@ -131,35 +132,50 @@ def get_expense_details():
         try:
             amt = round(float(input("Enter expense amount: ").strip()), 2)
             # If expense_amt cast successfully, then break out of the loop
-            break
+            if amt < 0:
+                print("Invalid amount.")
+                logging.error("Invalid amount entered by user.")
+            else:
+                break
         except ValueError:
             print("Invalid amount.")
             logging.error("Invalid amount entered by user.")
-    desc = input("Enter expense description: ").strip()
-    date = get_date()   # YYYY-MM-DD
-    return amt, desc, date
+    while True:
+        desc = input("Enter expense description: ").strip()
+        if len(desc) < 1:
+            print("Invalid description.")
+            logging.error("Invalid description entered by user.")
+        else:
+            break
+    input_date = get_date()   # YYYY-MM-DD
+    return amt, desc, input_date
 
 def get_expense_edits():
     while True:
         try:
             amt_str = input("Enter new amount: ")
-            if amt_str == "":
+            if not amt_str.strip():
                 amt = None
+                break
+            elif float(amt_str.strip()) > 0:
+                amt = round(float(amt_str.strip()), 2)
+                break
             else:
-                amt = round(float(amt_str), 2)
-            break
+                print("Invalid amount.")
+                logging.error("Invalid amount entered by user.")
         except ValueError:
             print("Invalid amount.")
             logging.error("Invalid amount entered by user.")
     desc = input("Enter expense description: ").strip()
-    if desc == "":
+    if not desc.strip():
         desc = None
     while True:
         try:
-            date_str = input("Enter expense date: ")
-            if date_str == "":
+            date_str = input("Enter expense date (YYYY-MM-dd): ")
+            if not date_str.strip():
+                input_date = None
                 break
-            date_parts = date_str.split("-", 2)
+            date_parts = date_str.strip().split("-", 2)
             expense_year = int(date_parts[0])
             expense_month = int(date_parts[1])
             expense_day = int(date_parts[2])
@@ -175,18 +191,21 @@ def get_expense_edits():
             else:
                 is_valid_day = 0 < expense_day <= 31
             if is_valid_month and is_valid_day:
-                break
+                input_date = f"{expense_year:0{4}}-{expense_month:0{2}}-{expense_day:0{2}}"
+                date_object = datetime.strptime(input_date, "%Y-%m-%d").date()
+                today = date.today()
+                if date_object <= today:
+                    break
+                else:
+                    print("Cannot enter a future date.")
+                    logging.error("Future date entered by user.")
             else:
                 print(f"{"Invalid month." if not is_valid_month else ""} {"Invalid day." if not is_valid_day else ""}")
                 logging.error("Invalid date entered by user.")
         except ValueError:
             print("Invalid date.")
             logging.error("Invalid date entered by user.")
-    if date_str != "":
-        date = f"{expense_year:0{4}}-{expense_month:0{2}}-{expense_day:0{2}}"
-    else:
-        date = None
-    return amt, desc, date
+    return amt, desc, input_date
 
 def print_main_menu():
     header_string = "========= ACTIONS ========="
@@ -206,12 +225,16 @@ def print_main_menu():
 def print_database():
     users, expenses, approvals = get_db()
     pd.set_option('display.max_rows', None)
-    pd.set_option('display.max_columns', None)
+    # pd.set_option('display.max_columns', None) # Should be called already; uncomment if that is not the case
+    # pd.set_option("display.width", 1000) # Should be called already; uncomment if that is not the case
     pd.set_option('display.max_colwidth', None)
     print(f"\nusers:\n{users}\nexpenses:\n{expenses}\napprovals:\n{approvals}\n")
     logging.info("Printed database.")
 
 if __name__ == '__main__':
+    pd.set_option("display.max_columns", None)
+    pd.set_option("display.max_colwidth", 100)
+    pd.set_option("display.width", 1000)
     user_df = login()
     is_done = False  # Flag indicates whether the user is done; the application should quit when this is True
     while not is_done:

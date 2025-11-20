@@ -88,7 +88,8 @@ def insert_samples():
         (11, "pending", None, None, None),
         (2, "approved", 12, "Proper documentation of commuting provided", "2025-02-20"),
         (10, "denied", 13, "The manager referenced in this expense does not exist.", "2025-08-30"),
-        (1, "pending", 8, None, None)
+        (1, "pending", 8, None, None),
+        (7, "approved", 4, "Checks out", "2024-12-10")
     ]
     query_insert_users = "INSERT INTO users (username, password, role) VALUES (?, ?, ?);"
     query_insert_expenses = "INSERT INTO expenses (user_id, amount, description, date) VALUES (?, ?, ?, ?);"
@@ -114,9 +115,10 @@ if __name__ == "__main__":
         df_approvals = pd.read_sql("SELECT * FROM approvals", conn1)
 
     # Print results
-    pd.set_option('display.max_rows', None)
-    pd.set_option('display.max_columns', None)
-    pd.set_option('display.max_colwidth', None)
+    pd.set_option("display.max_rows", None)
+    pd.set_option("display.max_columns", None)
+    pd.set_option("display.max_colwidth", None)
+    pd.set_option("display.width", 1000)
     print("users:")
     print(df_users)
     print("\nexpenses:")

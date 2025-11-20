@@ -1,18 +1,10 @@
 # Originally created: 11/13/2025
-# Version: 0.0.0
+# Version: 1.0.0
 
 import sqlite3 as sql
 import pandas as pd
 
 db = '../expenses_database.db'
-
-# TODO
-# [X] Login
-# [X] Submit a new expense with details about amount and description
-# [X] View the status of my submitted expenses so that I know whether they are pending, approved, or denied.
-# [X] Edit expenses that are still pending so that I can correct mistakes before they are reviewed.
-# [X] Delete expenses that are still pending so that I can correct mistakes before they are reviewed.
-# [X] History of all my approved and denied expenses so that I can track my financial activity over time.
 
 def verify_user(username, password):
     query = "SELECT * FROM users WHERE username = ? AND password = ?;"

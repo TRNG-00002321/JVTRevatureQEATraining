@@ -7,15 +7,6 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.ArrayList;
 
-/*
-TODO
-[X] Log in securely so that I can access and manage employee expense reports.
-[X] View a list of all pending expenses
-[X] Approve or deny submitted expenses
-[X] Add comments to expense decisions
-[X] Generate reports by employee, category, or date
- */
-
 public class ManagerJDBCM {
     private Connection connection;
     private String dbFilePath;
@@ -48,7 +39,7 @@ public class ManagerJDBCM {
         try {
             this.connection.close();
         } catch (SQLException e) {
-            System.out.println("Error closing SQLite database connection: " + e.getMessage());
+            System.err.println("Error closing SQLite database connection: " + e.getMessage());
         }
     }
 
@@ -62,13 +53,13 @@ public class ManagerJDBCM {
         setConnection();
     }
 
-    public Manager verifyLogin(String username, String password) throws NullPointerException{
+    public Manager verifyLogin(String uName, String pwd) throws NullPointerException, IllegalArgumentException {
         String sql = "SELECT * FROM users WHERE username = ? AND password = ?;";
         List<User> users = new ArrayList<>();
 
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
-            pstmt.setString(1, username);
-            pstmt.setString(2, password);
+            pstmt.setString(1, uName);
+            pstmt.setString(2, pwd);
             ResultSet rs = pstmt.executeQuery();
             while (rs.next()) {
                 int id = rs.getInt("id");
@@ -86,12 +77,17 @@ public class ManagerJDBCM {
                 }
             }
         } catch (SQLException e) {
-            System.out.println("Error querying SQLite database connection: " + e.getMessage());
+            System.err.println("Error querying SQLite database connection: " + e.getMessage());
         }
 
         for (User e : users){
-            if (e.getName().equals(username) && e.getPassword().equals(password)) {
-                return (Manager) e;
+            if (e.getName().equals(uName) && e.getPassword().equals(pwd)) {
+                if (e.isManager()) {
+                    return (Manager) e;
+                }
+                else {
+                    throw new IllegalArgumentException("User is not a manager.");
+                }
             }
         }
 
@@ -115,7 +111,7 @@ public class ManagerJDBCM {
                 expenses.add(new Expense(expenseId, userId, amount, desc, date));
             }
         } catch (SQLException e) {
-            System.out.println("Error querying SQLite database connection: " + e.getMessage());
+            System.err.println("Error querying SQLite database connection: " + e.getMessage());
         }
 
         return expenses;
@@ -139,7 +135,7 @@ public class ManagerJDBCM {
                 pendingExpenses.add(new Expense(expenseId, userId, amount, desc, date));
             }
         } catch (SQLException e) {
-            System.out.println("Error querying SQLite database connection: " + e.getMessage());
+            System.err.println("Error querying SQLite database connection: " + e.getMessage());
         }
 
         return pendingExpenses;
@@ -157,7 +153,7 @@ public class ManagerJDBCM {
             pstmt.setInt(5, approvalId);
             return pstmt.executeUpdate();
         } catch (SQLException e) {
-            System.out.println("Error querying SQLite database connection: " + e.getMessage());
+            System.err.println("Error querying SQLite database connection: " + e.getMessage());
         }
 
         return -1;
@@ -175,7 +171,7 @@ public class ManagerJDBCM {
             pstmt.setInt(5, approvalId);
             return pstmt.executeUpdate();
         } catch (SQLException e) {
-            System.out.println("Error querying SQLite database connection: " + e.getMessage());
+            System.err.println("Error querying SQLite database connection: " + e.getMessage());
         }
 
         return -1;

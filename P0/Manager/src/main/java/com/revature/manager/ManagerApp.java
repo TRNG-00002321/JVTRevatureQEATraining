@@ -56,19 +56,51 @@ public class ManagerApp {
     public static int selectApproval() {
         List<Integer> approvalIds = viewPending().stream().map(Expense::getId).toList();
         int userSelection = -1;
-        // TODO Prompt user to enter an int; if user input is a valid approval ID, return it; otherwise, log error & loop.
+        while (true) {
+            System.out.print("\nSelect an approval (enter its ID): ");
+            userSelection = scanner.nextInt();
+            if (approvalIds.contains(userSelection)) {
+                break;
+            } else {
+                logger.error("Unable to select an approval (invalid id).");
+            }
+        }
 
         return userSelection;
     }
 
+    public static String getComment() {
+        String userComment;
+        while (true) {
+            System.out.print("\nComment: ");
+            userComment = scanner.nextLine();
+            if (userComment.isBlank()) {
+                logger.error("Illegal argument passed as approval comment.");
+            } else {
+                break;
+            }
+        }
+        return userComment;
+    }
+
     public static void approve(Manager m) {
         int id = selectApproval();
-        //
+        String comment = getComment();
+        if (dbManager.approveExpense(id, m.getId(), comment) > 0) {
+            logger.info("Expense approved (approval ID: {}) by manager {} (user ID: {}).", id, m.getName(), m.getId());
+        } else {
+            logger.error("Expense approval failed. (approval ID: {}, manager / user ID: {})", id, m.getId());
+        }
     }
 
     public static void deny(Manager m) {
         int id = selectApproval();
-        //
+        String comment = getComment();
+        if (dbManager.denyExpense(id, m.getId(), comment) > 0) {
+            logger.info("Expense denied (approval ID: {}) by manager {} (user ID: {}).", id, m.getName(), m.getId());
+        } else {
+            logger.error("Expense denial failed. (approval ID: {}, manager / user ID: {})", id, m.getId());
+        }
     }
 
     public static void reportByEmployee(Manager m) {

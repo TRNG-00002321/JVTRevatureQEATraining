@@ -1,7 +1,12 @@
 package com.revature.manager;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Scanner;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,9 +14,9 @@ import org.slf4j.LoggerFactory;
 TODO
 [X] Log in securely so that I can access and manage employee expense reports.
 [X] View a list of all pending expenses
-[] Approve or deny submitted expenses
-[] Add comments to expense decisions
-[] Generate reports by employee, category, or date
+[X] Approve or deny submitted expenses
+[X] Add comments to expense decisions
+[X] Generate reports by employee, category, or date
  */
 
 public class ManagerApp {
@@ -72,7 +77,7 @@ public class ManagerApp {
     public static String getComment() {
         String userComment;
         while (true) {
-            System.out.print("\nComment: ");
+            System.out.print("\nEnter comment: ");
             userComment = scanner.nextLine();
             if (userComment.isBlank()) {
                 logger.error("Illegal argument passed as approval comment.");
@@ -104,19 +109,101 @@ public class ManagerApp {
     }
 
     public static void reportByEmployee(Manager m) {
-        //
+        String header = "====== EXPENSE REPORT ======";
+        List<Expense> expenses = dbManager.getAllExpenses();
+        TreeMap<Integer, Double> employeeTotals = new TreeMap<>(
+                expenses.stream().collect(
+                        Collectors.groupingBy(Expense::getUser,
+                                Collectors.summingDouble(Expense::getAmount)
+                        ))
+        );
+        System.out.println(header);
+        for (Map.Entry<Integer, Double> e : employeeTotals.entrySet()) {
+            System.out.printf("Employee ID: %-4d, Expense Total: $%-10.2f%n", e.getKey(), e.getValue());
+        }
+        for (int i = 0; i < header.length(); i++) {
+            System.out.print('=');
+        }
+        System.out.println('\n');
+        logger.info("Manager (user ID: {}) generated a by-employee expense report.", m.getId());
     }
 
     public static void reportByCategory(Manager m) {
-        //
+        String header = "====== EXPENSE REPORT ======";
+        List<Expense> expenses = dbManager.getAllExpenses();
+        TreeMap<String, Double> categoryTotals = new TreeMap<>(
+                expenses.stream().collect(
+                Collectors.groupingBy(Expense::getDescription,
+                        Collectors.summingDouble(Expense::getAmount)
+                ))
+        );
+        System.out.println(header);
+        for (Map.Entry<String, Double> e : categoryTotals.entrySet()) {
+            System.out.printf("Category: %-50s| Expense Total: $%-10.2f%n", e.getKey(), e.getValue());
+        }
+        for (int i = 0; i < header.length(); i++) {
+            System.out.print('=');
+        }
+        System.out.println('\n');
+        logger.info("Manager (user ID: {}) generated a by-category expense report.", m.getId());
     }
 
     public static void reportByDate(Manager m) {
-        //
+        String header = "====== EXPENSE REPORT ======";
+        List<Expense> expenses = dbManager.getAllExpenses();
+        TreeMap<LocalDate, Double> dateTotals = new TreeMap<>(
+                expenses.stream().collect(
+                        Collectors.groupingBy(Expense::getDate,
+                                Collectors.summingDouble(Expense::getAmount)
+                        ))
+        );
+        System.out.println(header);
+        for (Map.Entry<LocalDate, Double> e : dateTotals.entrySet()) {
+            System.out.printf("Date: %-12s, Expense Total: $%-10.2f%n", e.getKey(), e.getValue());
+        }
+        for (int i = 0; i < header.length(); i++) {
+            System.out.print('=');
+        }
+        System.out.println('\n');
+        logger.info("Manager (user ID: {}) generated a by-date expense report.", m.getId());
     }
 
     public static void generateReport(Manager m) {
-        //
+        String[] reportOptions = {"employee", "category", "date"};
+        String header = "========= REPORT TYPES =========";
+        String reportTypeSelection = "";
+        boolean isValidReportType = false;
+
+        while (!isValidReportType) {
+            System.out.println(header);
+            for (int i = 0; i < reportOptions.length; i++) {
+                System.out.println((i + 1) + ". Report by " + reportOptions[i]);
+            }
+            for (int i = 0; i < header.length(); i++) {
+                System.out.print('=');
+            }
+            System.out.print("\nSelect a report type: ");
+            reportTypeSelection = scanner.nextLine();
+            switch (reportTypeSelection.trim()) {
+                case "1":
+                case "employee":
+                    reportByEmployee(m);
+                    isValidReportType = true;
+                    break;
+                case "2":
+                case "category":
+                    reportByCategory(m);
+                    isValidReportType = true;
+                    break;
+                case "3":
+                case "date":
+                    reportByDate(m);
+                    isValidReportType = true;
+                    break;
+                default:
+                    logger.error("Invalid report type selected.");
+            }
+        }
     }
 
     public static void quit() {

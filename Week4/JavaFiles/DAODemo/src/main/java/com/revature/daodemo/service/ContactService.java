@@ -4,19 +4,9 @@ import com.revature.daodemo.model.Contact;
 import java.util.List;
 
 public interface ContactService {
-    public default List<Contact> getAllContacts() {
-        return null;
-    }
-    public default Contact getContact(int id) {
-        return null;
-    }
-    public default void save(Contact contact) {
-        //
-    }
-    public default Contact update(int id) {
-        return null;
-    }
-    public default void delete(int id) {
-        //
-    }
+    public List<Contact> getAllContacts();
+    public Contact getContact(int id);
+    public void save(Contact contact);
+    public Contact update(int id);
+    public void delete(int id);
 }

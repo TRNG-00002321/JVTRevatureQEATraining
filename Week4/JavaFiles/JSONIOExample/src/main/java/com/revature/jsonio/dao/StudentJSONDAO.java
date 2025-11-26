@@ -1,6 +1,6 @@
 package com.revature.jsonio.dao;
 
-import com.revature.jsonio.model.Employee;
+import com.revature.jsonio.model.Student;
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.ObjectMapper;
@@ -10,17 +10,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class EmployeeJSONDAO implements ExampleDAO<Employee> {
+public class StudentJSONDAO implements ExampleDAO<Student> {
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private static final ObjectWriter objectWriter = objectMapper.writerWithDefaultPrettyPrinter();
 
     private File file;
 
-    public EmployeeJSONDAO() {
+    public StudentJSONDAO() {
         this.file = new File("example.json");
     }
 
-    public EmployeeJSONDAO(File file) {
+    public StudentJSONDAO(File file) {
         this.file = file;
     }
 
@@ -33,32 +33,32 @@ public class EmployeeJSONDAO implements ExampleDAO<Employee> {
     }
 
     @Override
-    public List<Employee> getAll() {
-        List<Employee> emps;
+    public List<Student> getAll() {
+        List<Student> students;
         try {
             if (file.exists() && file.length() > 0) {
-                emps = objectMapper.readValue(file, new TypeReference<>() {});
+                students = objectMapper.readValue(file, new TypeReference<>() {});
             } else {
-                emps = new ArrayList<>();
+                students = new ArrayList<>();
             }
         } catch (JacksonException e) {
             throw new RuntimeException(e);
         }
-        return emps;
+        return students;
     }
 
     @Override
-    public Optional<Employee> get(int id) {
-        List<Employee> emps = getAll();
-        return emps.stream().filter(employee -> employee.getId() == id).findFirst();
+    public Optional<Student> get(int id) {
+        List<Student> students = getAll();
+        return students.stream().filter(student -> student.getId() == id).findFirst();
     }
 
     @Override
-    public void save(Employee obj) {
-        List<Employee> emps = getAll();
-        emps.add(obj);
+    public void save(Student obj) {
+        List<Student> students = getAll();
+        students.add(obj);
         try {
-            objectWriter.writeValue(file, emps);
+            objectWriter.writeValue(file, students);
         } catch (JacksonException e) {
             throw new RuntimeException(e);
         }

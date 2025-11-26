@@ -3,6 +3,8 @@ package com.revature.jsonio;
 import com.revature.jsonio.model.Employee;
 import com.revature.jsonio.model.Student;
 import com.revature.jsonio.service.EmployeeService;
+import com.revature.jsonio.service.StudentService;
+
 import java.io.File;
 import java.util.List;
 import java.util.Optional;
@@ -23,21 +25,39 @@ public class Main {
         Student s3 = new Student(513667, "Kendrick Pamar", 3.367);
         Student s4 = new Student(881626, "The Sufferer", 1.967);
 
-        EmployeeService empService = new EmployeeService();
-        empService.save(emp1);
-        empService.save(emp2);
-        empService.save(emp3);
-        empService.save(emp4);
-        empService.save(emp5);
+        EmployeeService empService = new EmployeeService(employeeJson);
+        StudentService studentService = new StudentService(studentJson);
+
+        if (!employeeJson.exists() || employeeJson.length() <= 0) {
+            empService.save(emp1);
+            empService.save(emp2);
+            empService.save(emp3);
+            empService.save(emp4);
+            empService.save(emp5);
+        }
+
+        if (!studentJson.exists() || studentJson.length() <= 0) {
+            studentService.save(s1);
+            studentService.save(s2);
+            studentService.save(s3);
+            studentService.save(s4);
+        }
 
         List<Employee> emps = empService.getAll();
         for (Employee emp : emps) {
             System.out.println(emp);
         }
+        System.out.println();
+        List<Student> students = studentService.getAll();
+        for (Student s : students) {
+            System.out.println(s);
+        }
+        System.out.println();
 
-        Optional<Employee> test = empService.get(101);
-        System.out.println(test.orElse(new Employee(0, "Michael McDoesn't-Exist", "XXXX Not Real Street", "None")));
+        Optional<Employee> testE = empService.get(101);
+        System.out.println(testE.orElse(new Employee(-1, "Michael McDoesn't-Exist", "XXXX Not Real Street", "None")));
 
-        //
+        Optional<Student> testS = studentService.get(251844);
+        System.out.println(testS.orElse(new Student(-1, "Michael McDoesn't-Exist", -5.67)));
     }
 }

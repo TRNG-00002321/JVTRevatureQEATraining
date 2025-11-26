@@ -7,14 +7,14 @@ import java.util.List;
 import java.util.Optional;
 
 public class EmployeeService implements ExampleService<Employee> {
-    private EmployeeJSONDAO empManager;
+    private final EmployeeJSONDAO empManager;
 
     public EmployeeService() {
-        empManager = new EmployeeJSONDAO();
+        this.empManager = new EmployeeJSONDAO();
     }
 
     public EmployeeService(File file) {
-        empManager = new EmployeeJSONDAO(file);
+        this.empManager = new EmployeeJSONDAO(file);
     }
 
     @Override

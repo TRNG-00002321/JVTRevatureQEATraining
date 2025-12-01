@@ -2,17 +2,38 @@ package com.revature.manager;
 
 import org.sqlite.*;
 
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Properties;
 
 public class ManagerJDBCM {
+    private static final String DEFAULT_DB = "jdbc:mysql://localhost:3306/expensesystem";
+    private static final String DEFAULT_USER = "root";
+    private static final String DEFAULT_PASSWORD = "password";
+
     private Connection connection;
     private String dbFilePath;
+    private String dbUser;
+    private String dbPass;
 
     public ManagerJDBCM(){
-        this.dbFilePath = "../expenses_database.db";
+        Properties properties = new Properties();
+        try (BufferedInputStream input = new BufferedInputStream(new FileInputStream("managerConfig.properties"))) {
+            properties.load(input);
+            this.dbFilePath = properties.getProperty("database.url", DEFAULT_DB);
+            this.dbUser = properties.getProperty("database.username", DEFAULT_USER);
+            this.dbPass = properties.getProperty("database.password", DEFAULT_PASSWORD);
+        } catch (IOException e) {
+            System.err.println("Error reading database properties: " + e.getMessage());
+            this.dbFilePath = DEFAULT_DB;
+            this.dbUser = DEFAULT_USER;
+            this.dbPass = DEFAULT_PASSWORD;
+        }
         this.setConnection();
     }
 
@@ -22,16 +43,15 @@ public class ManagerJDBCM {
 
     public void setConnection() {
         try {
-            // Load the SQLite JDBC driver (optional for modern JDBC, but good practice)
-            Class.forName("org.sqlite.JDBC");
+            Class.forName("com.mysql.cj.jdbc.Driver");
 
-            String url = "jdbc:sqlite:" + this.dbFilePath;
-            this.connection = DriverManager.getConnection(url);
+            String url = this.dbFilePath;
+            this.connection = DriverManager.getConnection(url, this.dbUser, this.dbPass);
             System.out.println("Connection to SQLite database established successfully.");
         } catch (SQLException e) {
-            System.err.println("Error connecting to SQLite database: " + e.getMessage());
+            System.err.println("Error connecting to MySQL database: " + e.getMessage());
         } catch (ClassNotFoundException e) {
-            System.err.println("SQLite JDBC driver not found: " + e.getMessage());
+            System.err.println("MySQL JDBC driver not found: " + e.getMessage());
         }
     }
 
@@ -39,7 +59,7 @@ public class ManagerJDBCM {
         try {
             this.connection.close();
         } catch (SQLException e) {
-            System.err.println("Error closing SQLite database connection: " + e.getMessage());
+            System.err.println("Error closing MySQL database connection: " + e.getMessage());
         }
     }
 
@@ -77,7 +97,7 @@ public class ManagerJDBCM {
                 }
             }
         } catch (SQLException e) {
-            System.err.println("Error querying SQLite database connection: " + e.getMessage());
+            System.err.println("Error querying MySQL database connection: " + e.getMessage());
         }
 
         for (User e : users){
@@ -111,7 +131,7 @@ public class ManagerJDBCM {
                 expenses.add(new Expense(expenseId, userId, amount, desc, date));
             }
         } catch (SQLException e) {
-            System.err.println("Error querying SQLite database connection: " + e.getMessage());
+            System.err.println("Error querying MySQL database connection: " + e.getMessage());
         }
 
         return expenses;
@@ -135,7 +155,7 @@ public class ManagerJDBCM {
                 pendingExpenses.add(new Expense(expenseId, userId, amount, desc, date));
             }
         } catch (SQLException e) {
-            System.err.println("Error querying SQLite database connection: " + e.getMessage());
+            System.err.println("Error querying MySQL database connection: " + e.getMessage());
         }
 
         return pendingExpenses;
@@ -153,7 +173,7 @@ public class ManagerJDBCM {
             pstmt.setInt(5, approvalId);
             return pstmt.executeUpdate();
         } catch (SQLException e) {
-            System.err.println("Error querying SQLite database connection: " + e.getMessage());
+            System.err.println("Error querying MySQL database connection: " + e.getMessage());
         }
 
         return -1;
@@ -171,7 +191,7 @@ public class ManagerJDBCM {
             pstmt.setInt(5, approvalId);
             return pstmt.executeUpdate();
         } catch (SQLException e) {
-            System.err.println("Error querying SQLite database connection: " + e.getMessage());
+            System.err.println("Error querying MySQL database connection: " + e.getMessage());
         }
 
         return -1;

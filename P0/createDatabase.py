@@ -5,23 +5,28 @@
 # as specified by P0.md. Some sample values shall also be created and
 # inserted into the database.
 
+import sqlite3 as sqlite
 import pandas as pd
 import mysql.connector as mysql
+from sqlalchemy import create_engine
+
+db = "expenses_database.db"
+engine = create_engine("mysql+mysqlconnector://root:password@localhost:3306/expensesystem")
 
 def create_tables():
     try:
-        # Creates the file if it does not exist.
-        with mysql.connect(host="localhost", user="root", password="password", database="expensesystem") as conn:
-            cur = conn.cursor()
-            sql_script = """
+        # Creates the sqlite database file if it does not exist.
+        with sqlite.connect(db) as sqlite_conn:
+            sqlite_cur = sqlite_conn.cursor()
+            sqlite_script = """
                 CREATE TABLE IF NOT EXISTS users (
-                    id INTEGER AUTO_INCREMENT PRIMARY KEY,
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
                     username TEXT UNIQUE NOT NULL,
                     password TEXT NOT NULL,
                     role TEXT NOT NULL
                 );
                 CREATE TABLE IF NOT EXISTS expenses (
-                    id INTEGER AUTO_INCREMENT PRIMARY KEY, 
+                    id INTEGER PRIMARY KEY AUTOINCREMENT, 
                     user_id INTEGER NOT NULL, 
                     amount REAL NOT NULL,  
                     description TEXT NOT NULL,
@@ -29,7 +34,7 @@ def create_tables():
                     FOREIGN KEY (user_id) REFERENCES users (id)
                 );
                 CREATE TABLE IF NOT EXISTS approvals (
-                    id INTEGER AUTO_INCREMENT PRIMARY KEY, 
+                    id INTEGER PRIMARY KEY AUTOINCREMENT, 
                     expense_id INTEGER NOT NULL,
                     status TEXT NOT NULL,
                     reviewer INTEGER,
@@ -39,10 +44,50 @@ def create_tables():
                     FOREIGN KEY (reviewer) REFERENCES users (id)
                 );
             """
-            cur.execute(sql_script)
-            conn.commit()
+            sqlite_cur.executescript(sqlite_script)
+            sqlite_conn.commit()
+        with mysql.connect(host="localhost", user="root", password="password", database="expensesystem") as mysql_conn:
+            mysql_cur = mysql_conn.cursor()
+            mysql_script_users = """
+                CREATE TABLE IF NOT EXISTS users (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    username VARCHAR(255) UNIQUE NOT NULL,
+                    password VARCHAR(255) NOT NULL,
+                    role VARCHAR(255) NOT NULL
+                ) 
+            """
+            mysql_script_expenses = """
+                CREATE TABLE IF NOT EXISTS expenses (
+                    id INT AUTO_INCREMENT PRIMARY KEY, 
+                    user_id INT NOT NULL, 
+                    amount DOUBLE NOT NULL,  
+                    description VARCHAR(255) NOT NULL,
+                    date VARCHAR(10) NOT NULL,
+                    FOREIGN KEY (user_id) REFERENCES users (id)
+                )
+            """
+            mysql_script_approvals = """
+                CREATE TABLE IF NOT EXISTS approvals (
+                    id INT AUTO_INCREMENT PRIMARY KEY, 
+                    expense_id INT NOT NULL,
+                    status VARCHAR(8) NOT NULL,
+                    reviewer INT,
+                    comment VARCHAR(255),
+                    review_date VARCHAR(10),
+                    FOREIGN KEY (expense_id) REFERENCES expenses (id),
+                    FOREIGN KEY (reviewer) REFERENCES users (id)
+                )
+            """
+            mysql_cur.execute(mysql_script_users)
+            mysql_conn.commit()
+            mysql_cur.execute(mysql_script_expenses)
+            mysql_conn.commit()
+            mysql_cur.execute(mysql_script_approvals)
+            mysql_conn.commit()
+    except sqlite.Error as e:
+        print(f"SQLite Error while creating tables: {e}")
     except mysql.Error as e:
-        print(f"MySQL Error: {e}")
+        print(f"MySQL Error while creating tables: {e}")
 
 def insert_samples():
     sample_users = [
@@ -93,24 +138,31 @@ def insert_samples():
     query_insert_expenses = "INSERT INTO expenses (user_id, amount, description, date) VALUES (?, ?, ?, ?);"
     query_insert_approvals = "INSERT INTO approvals (expense_id, status, reviewer, comment, review_date) VALUES (?, ?, ?, ?, ?);"
     try:
-        with mysql.connect(host="localhost", user="root", password="password", database="expensesystem") as conn:
-            cur = conn.cursor()
-            cur.executemany(query_insert_users, sample_users)
-            conn.commit()
-            cur.executemany(query_insert_expenses, sample_expenses)
-            conn.commit()
-            cur.executemany(query_insert_approvals, sample_approvals)
-            conn.commit()
+        with sqlite.connect(db) as sqlite_conn:
+            sqlite_cur = sqlite_conn.cursor()
+            sqlite_cur.executemany(query_insert_users, sample_users)
+            sqlite_conn.commit()
+            sqlite_cur.executemany(query_insert_expenses, sample_expenses)
+            sqlite_conn.commit()
+            sqlite_cur.executemany(query_insert_approvals, sample_approvals)
+            sqlite_conn.commit()
+            users_rows = pd.read_sql("SELECT * FROM users", sqlite_conn)
+            expenses_rows = pd.read_sql("SELECT * FROM expenses", sqlite_conn)
+            approvals_rows = pd.read_sql("SELECT * FROM approvals", sqlite_conn)
+        users_rows.to_sql("users", con=engine, index=False, if_exists="append")
+        expenses_rows.to_sql("expenses", con=engine, index=False, if_exists="append")
+        approvals_rows.to_sql("approvals", con=engine, index=False, if_exists="append")
+    except sqlite.Error as e:
+        print(f"SQLite Error while inserting: {e}")
     except mysql.Error as e:
-        print(f"MySQL Error: {e}")
+        print(f"MySQL Error while inserting: {e}")
 
 if __name__ == "__main__":
     create_tables()
     insert_samples()
-    with mysql.connect(host="localhost", user="root", password="password", database="expensesystem") as conn1:
-        df_users = pd.read_sql("SELECT * FROM users", conn1)
-        df_expenses = pd.read_sql("SELECT * FROM expenses", conn1)
-        df_approvals = pd.read_sql("SELECT * FROM approvals", conn1)
+    df_users = pd.read_sql_table("users", con=engine)
+    df_expenses = pd.read_sql_table("expenses", con=engine)
+    df_approvals = pd.read_sql_table("approvals", con=engine)
 
     # Print results
     pd.set_option("display.max_rows", None)

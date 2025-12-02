@@ -3,13 +3,19 @@
 
 import sqlite3 as sql
 import pandas as pd
+from sqlalchemy import create_engine, MetaData
 
-db = '../expenses_database.db'
+db = "../expenses_database.db"
+engine = create_engine("mysql+mysqlconnector://root:password@localhost:3306/expensesystem")
+metadata = MetaData()
+metadata.reflect(bind=engine)
+users_table = metadata.tables["users"]
+expenses_table = metadata.tables["expenses"]
+approvals_table = metadata.tables["approvals"]
 
 def verify_user(username, password):
-    query = "SELECT * FROM users WHERE username = ? AND password = ?;"
-    with sql.connect(db) as conn:
-        df = pd.read_sql(query, conn, params=(username, password))
+    query = "SELECT * FROM users WHERE username = %s AND password = %s"
+    df = pd.read_sql(query, con=engine, params=(username, password))
     if df.empty:
         return None
     else:
@@ -34,44 +40,31 @@ def view_expenses_statuses(user_id):
     query = """SELECT e.id, e.user_id, e.amount, e.description, e.date, a.status, a.comment 
         FROM expenses AS e 
         JOIN approvals AS a ON e.id = a.expense_id
-        WHERE user_id = ?;
+        WHERE user_id = %s;
         """
-    with sql.connect(db) as conn:
-        df = pd.read_sql(query, conn, params=(int(user_id),))
+    df = pd.read_sql(query, con=engine, params=(int(user_id),))
     return df
 
 def view_expenses_pending(user_id):
     query = """SELECT e.id, e.amount, e.description, e.date 
         FROM expenses AS e 
         JOIN approvals AS a ON e.id = a.expense_id 
-        WHERE e.user_id = ? AND a.status = ?;
+        WHERE e.user_id = %s AND a.status = %s;
         """
-    with sql.connect(db) as conn:
-        cur = conn.cursor()
-        cur.execute(query, (int(user_id), "pending"))
-        expenses = cur.fetchall()
-        column_names = [description[0] for description in cur.description]
-    df = pd.DataFrame(expenses, columns=column_names)
+    df = pd.read_sql(query, con=engine, params=(int(user_id), "pending"))
     return df
 
 def view_expenses_history(user_id):
     query = """SELECT e.id, e.amount, e.description, e.date, a.status, a.comment 
         FROM expenses AS e 
         JOIN approvals AS a ON e.id = a.expense_id 
-        WHERE e.user_id = ? AND (a.status = ? OR a.status = ?);
+        WHERE e.user_id = %s AND (a.status = %s OR a.status = %s);
         """
-    with sql.connect(db) as conn:
-        cur = conn.cursor()
-        cur.execute(query, (int(user_id), "approved", "denied"))
-        expenses = cur.fetchall()
-        column_names = [description[0] for description in cur.description]
-    df = pd.DataFrame(expenses, columns=column_names)
+    df = pd.read_sql(query, con=engine, params=(int(user_id), "approved", "denied"))
     return df
 
 def edit_expense(expense_id, amount=None, description=None, date=None):
-    if amount is None or description is None or date is None:
-        with sql.connect(db) as conn:
-            df = pd.read_sql("SELECT * FROM expenses WHERE id = ?;", conn, params=(int(expense_id),))
+    df = pd.read_sql("SELECT * FROM expenses WHERE id = %s;", con=engine, params=(int(expense_id),))
     if amount is None:
         amount = df.loc[0, 'amount']
     if description is None:
@@ -94,8 +87,7 @@ def delete_expense(expense_id):
         conn.commit()
 
 def get_db():
-    with sql.connect(db) as conn:
-        df_users = pd.read_sql("SELECT * FROM users", conn)
-        df_expenses = pd.read_sql("SELECT * FROM expenses", conn)
-        df_approvals = pd.read_sql("SELECT * FROM approvals", conn)
+    df_users = pd.read_sql_table("users", con=engine)
+    df_expenses = pd.read_sql_table("expenses", con=engine)
+    df_approvals = pd.read_sql_table("approvals", con=engine)
     return df_users, df_expenses, df_approvals

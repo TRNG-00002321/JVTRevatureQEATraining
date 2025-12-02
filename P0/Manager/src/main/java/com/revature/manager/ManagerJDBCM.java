@@ -47,7 +47,7 @@ public class ManagerJDBCM {
 
             String url = this.dbFilePath;
             this.connection = DriverManager.getConnection(url, this.dbUser, this.dbPass);
-            System.out.println("Connection to SQLite database established successfully.");
+            System.out.println("Connection to MySQL database established successfully.");
         } catch (SQLException e) {
             System.err.println("Error connecting to MySQL database: " + e.getMessage());
         } catch (ClassNotFoundException e) {

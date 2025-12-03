@@ -63,7 +63,7 @@ def create_tables():
                     amount DOUBLE NOT NULL,  
                     description VARCHAR(255) NOT NULL,
                     date VARCHAR(10) NOT NULL,
-                    FOREIGN KEY (user_id) REFERENCES users (id)
+                    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE ON UPDATE CASCADE
                 )
             """
             mysql_script_approvals = """
@@ -74,8 +74,8 @@ def create_tables():
                     reviewer INT,
                     comment VARCHAR(255),
                     review_date VARCHAR(10),
-                    FOREIGN KEY (expense_id) REFERENCES expenses (id),
-                    FOREIGN KEY (reviewer) REFERENCES users (id)
+                    FOREIGN KEY (expense_id) REFERENCES expenses (id) ON DELETE CASCADE ON UPDATE CASCADE,
+                    FOREIGN KEY (reviewer) REFERENCES users (id) ON DELETE CASCADE ON UPDATE CASCADE
                 )
             """
             mysql_cur.execute(mysql_script_users)

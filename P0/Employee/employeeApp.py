@@ -47,7 +47,7 @@ def edit(df):
 def delete(df):
     user_id = df.at[0, "id"]
     pending_expenses_df = view_expenses_pending(user_id)
-    valid_expense_ids = pending_expenses_df['id']
+    valid_expense_ids = pending_expenses_df['id'].tolist()
     while True:
         print(pending_expenses_df)
         try:
@@ -217,7 +217,7 @@ def print_main_menu():
         "View your expense history",
         "Quit application"
     ]
-    print(header_string)
+    print("\n" + header_string)
     for i in range(len(actions)):
         print(f"{i+1}. {actions[i]}")
     print("=" * len(header_string))
@@ -255,12 +255,12 @@ if __name__ == '__main__':
                 is_done = True
                 logging.info("Quitting employee application.")
             case "demo":
-                print_database()
+                # print_database()
                 view_status(user_df)
                 history(user_df)
-                submit(user_df)
-                edit(user_df)
-                delete(user_df)
+                # submit(user_df)
+                # edit(user_df)
+                # delete(user_df)
                 print_database()
                 is_done = True
             case _:

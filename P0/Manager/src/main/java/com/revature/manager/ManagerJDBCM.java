@@ -161,16 +161,16 @@ public class ManagerJDBCM {
         return pendingExpenses;
     }
 
-    public int approveExpense(int approvalId, int reviewerId, String comment) {
+    public int approveExpense(int expenseId, int reviewerId, String comment) {
         LocalDate reviewDate = LocalDate.now();
-        String sql = "UPDATE approvals SET status = ?, reviewer = ?, comment = ?, review_date = ? WHERE id = ?";
+        String sql = "UPDATE approvals SET status = ?, reviewer = ?, comment = ?, review_date = ? WHERE expense_id = ?";
 
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setString(1, "approved");
             pstmt.setInt(2, reviewerId);
             pstmt.setString(3, comment);
             pstmt.setString(4, reviewDate.toString());
-            pstmt.setInt(5, approvalId);
+            pstmt.setInt(5, expenseId);
             return pstmt.executeUpdate();
         } catch (SQLException e) {
             System.err.println("Error querying MySQL database connection: " + e.getMessage());
@@ -179,16 +179,16 @@ public class ManagerJDBCM {
         return -1;
     }
 
-    public int denyExpense(int approvalId, int reviewerId, String comment) {
+    public int denyExpense(int expenseId, int reviewerId, String comment) {
         LocalDate reviewDate = LocalDate.now();
-        String sql = "UPDATE approvals SET status = ?, reviewer = ?, comment = ?, review_date = ? WHERE id = ?";
+        String sql = "UPDATE approvals SET status = ?, reviewer = ?, comment = ?, review_date = ? WHERE expense_id = ?";
 
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setString(1, "denied");
             pstmt.setInt(2, reviewerId);
             pstmt.setString(3, comment);
             pstmt.setString(4, reviewDate.toString());
-            pstmt.setInt(5, approvalId);
+            pstmt.setInt(5, expenseId);
             return pstmt.executeUpdate();
         } catch (SQLException e) {
             System.err.println("Error querying MySQL database connection: " + e.getMessage());

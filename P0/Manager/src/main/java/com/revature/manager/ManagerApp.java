@@ -70,6 +70,7 @@ public class ManagerApp {
                 logger.error("Unable to select an approval (invalid id).");
             }
         }
+        scanner.nextLine(); // Flush the scanner's buffer
 
         return userSelection;
     }

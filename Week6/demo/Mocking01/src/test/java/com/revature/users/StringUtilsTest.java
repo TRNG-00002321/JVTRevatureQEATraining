@@ -56,7 +56,7 @@ public class StringUtilsTest {
     }
 
     @Test
-    public void testSplit_positive() {
+    public void testSplit_normal_positive() {
         String phrase = "1, 2, 3, 4, 5";
         String[] expectedResult = {"1", "2", "3", "4", "5"};
         String[] actualResult = StringUtils.split(phrase, ", ");
@@ -64,9 +64,15 @@ public class StringUtilsTest {
     }
 
     @Test
-    public void testSplit_negative() {
+    public void testSplit_empty_positive() {
         String[] actualResult = StringUtils.split(null, " ");
         assertArrayEquals(new String[0], actualResult);
+    }
+
+    @Test
+    public void testSplit_negative() {
+        String phrase = "Hello World!";
+        assertThrows(NullPointerException.class, () -> StringUtils.split(phrase, null));
     }
 
     @Test

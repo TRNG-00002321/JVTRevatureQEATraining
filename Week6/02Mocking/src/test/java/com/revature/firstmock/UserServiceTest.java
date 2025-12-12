@@ -90,6 +90,11 @@ class UserServiceTest {
     }
 
     @Test
+    void createUser_nullEmail_throwsException() {
+        assertThrows(IllegalArgumentException.class, () -> userService.createUser(nullEmail));
+    }
+
+    @Test
     void createUser_invalidEmail_throwsException() {
         assertThrows(IllegalArgumentException.class, () -> userService.createUser(badEmail));
     }

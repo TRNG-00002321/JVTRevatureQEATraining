@@ -1,0 +1,457 @@
+{
+  "info": {
+    "_postman_id": "d8f8ed53-0f24-4579-ad2a-c753d363af19",
+    "name": "BookHaven API Tests",
+    "description": "API tests for BookHaven catalog system - Week 7 Exercise\n\nWeek7exercise_first_api_tests",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "GET ALL Posts",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "id": "c8f831a8-bbcb-4052-826e-3ded079bbb5b",
+            "exec": [
+              "pm.test(\"Status code is 200\", function() {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Response structure is correct\", function() {\r",
+              "    const response = pm.response.json();\r",
+              "\r",
+              "    pm.expect(response).to.be.an('array');\r",
+              "    pm.expect(response).to.have.lengthOf(100);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Response time is under 2 seconds\", function() {\r",
+              "    pm.expect(pm.response.responseTime).to.be.below(2000);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "id": "e44e4af5-6a31-4982-97b7-107540d944b7",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseURL}}/posts",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "path": [
+            "posts"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "GET Single Resource",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "id": "221d81b9-8a75-43ac-a264-6643622b06fd",
+            "exec": [
+              "pm.variables.set(\"postId\", 1);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "id": "c0e1ffe5-4b5a-41f0-9c1b-fb90b0739d3b",
+            "exec": [
+              "// Test 1: Status code is 200\r",
+              "pm.test(\"Status code is 200\", function() {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "// Test 2: Status code is in success range\r",
+              "pm.test(\"Status code is success (2xx)\", function() {\r",
+              "    pm.expect(pm.response.code).to.be.within(200, 299);\r",
+              "});\r",
+              "\r",
+              "// Test 3: Status text\r",
+              "pm.test(\"Status message is OK\", function() {\r",
+              "    pm.response.to.have.status(\"OK\");\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Response has expected length\", function() {\r",
+              "    const response = pm.response.json();\r",
+              "    pm.expect(response.length).to.be.undefined;\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Response has expected postId\", function() {\r",
+              "    const response = pm.response.json();\r",
+              "    const expectedUserId = pm.variables.get(\"postId\");\r",
+              "    pm.expect(response.id).to.equal(expectedUserId);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "id": "c677fb79-692b-4bbd-a3eb-d63c54f80642",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseURL}}/posts/:postId",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "path": [
+            "posts",
+            ":postId"
+          ],
+          "variable": [
+            {
+              "key": "postId",
+              "value": "1"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "GET Single Resource (Non-existent ID)",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "id": "221d81b9-8a75-43ac-a264-6643622b06fd",
+            "exec": [
+              "pm.variables.set(\"postId\", 999);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "id": "c0e1ffe5-4b5a-41f0-9c1b-fb90b0739d3b",
+            "exec": [
+              "pm.test(\"Status code is 404\", function () {\r",
+              "    pm.response.to.have.status(404);\r",
+              "});\r",
+              "\r",
+              "// Test 2: Status code is in client error range\r",
+              "pm.test(\"Status code is client error (4xx)\", function() {\r",
+              "    pm.expect(pm.response.code).to.be.within(400, 499);\r",
+              "});\r",
+              "\r",
+              "// Test 3: Status text\r",
+              "pm.test(\"Status message is Not Found\", function() {\r",
+              "    pm.response.to.have.status(\"Not Found\");\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Response has expected length\", function() {\r",
+              "    const response = pm.response.json();\r",
+              "    pm.expect(response.length).to.be.undefined;\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "id": "e01eb557-98ad-4173-b2b3-d49409c24e1d",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseURL}}/posts/:postId",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "path": [
+            "posts",
+            ":postId"
+          ],
+          "variable": [
+            {
+              "key": "postId",
+              "value": "999"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "GET Posts by User",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "id": "a720d363-7995-4970-bf6a-bf1d2ed84d77",
+            "exec": [
+              "pm.test(\"Status code is 200\", function() {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Response is an array of 10 posts where userId is 1\", function() {\r",
+              "    const response = pm.response.json();\r",
+              "    pm.expect(response).to.be.an('array');\r",
+              "    pm.expect(response).to.have.lengthOf(10);\r",
+              "    response.forEach((responseObj) => {\r",
+              "        pm.expect(responseObj).to.have.property('userId', 1);\r",
+              "    });\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "id": "8e9a0a64-9427-4030-ae06-11b4df4d7fbd",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseURL}}/posts?userId=1",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "path": [
+            "posts"
+          ],
+          "query": [
+            {
+              "key": "userId",
+              "value": "1"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "CREATE New Post",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "id": "0d8c333c-2e81-4957-874e-5302fb61d7d2",
+            "exec": [
+              "pm.test(\"Status code is 201\", function() {\r",
+              "    pm.response.to.have.status(201);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Response body contains the correct post data\", function() {\r",
+              "    const response = pm.response.json();\r",
+              "\r",
+              "    pm.expect(response.title).to.equal(\"API Testing is Essential\");\r",
+              "    pm.expect(response.body).to.equal(\"Every QA engineer should master API testing as it provides fast, reliable validation of backend services.\");\r",
+              "    pm.expect(response.userId).to.equal(1);\r",
+              "    pm.expect(response).to.have.property(\"id\");\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "id": "a4c53d0f-35a6-40df-9d1a-3fc660be090d",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"title\": \"API Testing is Essential\",\r\n    \"body\": \"Every QA engineer should master API testing as it provides fast, reliable validation of backend services.\",\r\n    \"userId\": 1\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseURL}}/posts",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "path": [
+            "posts"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "UPDATE Post",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "id": "4ccf931f-e357-4e0e-ad44-356eb5b1c964",
+            "exec": [
+              "pm.test(\"Status code is 200\", function() {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Response is updated post data\", function() {\r",
+              "    const response = pm.response.json();\r",
+              "    pm.expect(response.id).to.equal(1);\r",
+              "    pm.expect(response.title).to.equal(\"Updated Title - API Testing\");\r",
+              "    pm.expect(response.body).to.equal(\"This post has been updated via PUT request\");\r",
+              "    pm.expect(response.userId).to.equal(1);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "id": "0598b542-c12b-4a46-9784-14e284f9bc60",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"id\": 1,\r\n    \"title\": \"Updated Title - API Testing\",\r\n    \"body\": \"This post has been updated via PUT request\",\r\n    \"userId\": 1\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseURL}}/posts/:postId",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "path": [
+            "posts",
+            ":postId"
+          ],
+          "variable": [
+            {
+              "key": "postId",
+              "value": "1"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "DELETE Post",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "id": "6b89ca84-d8d8-4a0b-82a5-c66b2ec2da90",
+            "exec": [
+              "pm.test(\"Status code is 200\", function() {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Response is empty object\", function () {\r",
+              "    const response = pm.response.json();\r",
+              "    pm.expect(response).to.be.empty;\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "id": "8dad757b-a44d-4ebd-8f30-86badc8ab206",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"id\": 1,\r\n    \"title\": \"Updated Title - API Testing\",\r\n    \"body\": \"This post has been updated via PUT request\",\r\n    \"userId\": 1\r\n}"
+        },
+        "url": {
+          "raw": "{{baseURL}}/posts/:postId",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "path": [
+            "posts",
+            ":postId"
+          ],
+          "variable": [
+            {
+              "key": "postId",
+              "value": "1"
+            }
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "id": "2147a2d4-8fd5-49d0-8a12-da98448bb400",
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "id": "42476b2d-680c-417c-81a6-f8a4c7bcd9ce",
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ]
+}

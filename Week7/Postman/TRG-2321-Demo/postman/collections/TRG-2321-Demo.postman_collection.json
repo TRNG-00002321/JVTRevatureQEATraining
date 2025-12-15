@@ -1,0 +1,201 @@
+{
+  "info": {
+    "_postman_id": "16fbfc96-0f62-44e1-8b41-ad0ca1321eaa",
+    "name": "TRG-2321-Demo",
+    "description": "### Welcome to Postman! This is your first collection. \n\nCollections are your starting point for building and testing APIs. You can use this one to:\n\n• Group related requests\n• Test your API in real-world scenarios\n• Document and share your requests\n\nUpdate the name and overview whenever you’re ready to make it yours.\n\n[Learn more about Postman Collections.](https://learning.postman.com/docs/collections/collections-overview/)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Get All Users",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "id": "abd8f582-b18f-4c91-a39c-eefb98b4f8c1",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response is JSON\", function() {",
+              "    pm.response.to.be.json;",
+              "})",
+              "",
+              "pm.test(\"Response time is under 500ms\", function() {",
+              "    pm.expect(pm.response.responseTime).to.be.below(500);",
+              "})"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "id": "f2fc14ba-ff2c-488e-8b6b-b380e270973f",
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "id": "36f07659-c489-4f76-b6c7-ae147e3d5631",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseURL}}/users",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "path": [
+            "users"
+          ]
+        },
+        "description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+      },
+      "response": []
+    },
+    {
+      "name": "Post data",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "id": "38be8195-c6e3-40d2-a60d-ce318ef499b4",
+            "exec": [
+              "pm.test(\"Successful POST request\", function () {",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+              "});",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "id": "b59e9b2d-6784-40c4-83b0-d87a281cb6db",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n\t\"userId\": 1,\n    \"id\": 101,\n    \"title\": \"some data\",\n    \"body\": \"some text soome text some test\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseURL}}/posts",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "path": [
+            "posts"
+          ]
+        },
+        "description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
+      },
+      "response": []
+    },
+    {
+      "name": "Get Post based on PostId",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "id": "1b54fabe-9590-44a6-b27e-b4ab0f7989fc",
+            "exec": [
+              "pm.test(\"Response has required fields\", function() {\r",
+              "    const response = pm.response.json();\r",
+              "\r",
+              "    pm.expect(response).to.have.property('userId');\r",
+              "    pm.expect(response).to.have.property('id');\r",
+              "    pm.expect(response).to.have.property('title');\r",
+              "    pm.expect(response).to.have.property('body');\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Response structure is correct\", function() {\r",
+              "    const response = pm.response.json();\r",
+              "\r",
+              "    pm.expect(response.userId).to.be.a('number');\r",
+              "    pm.expect(response.id).to.be.a('number');\r",
+              "    pm.expect(response.title).to.be.a('string');\r",
+              "    pm.expect(response.body).to.be.a('string');\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Response contains expected data\", function () {\r",
+              "    const response = pm.response.json();\r",
+              "\r",
+              "    pm.expect(response.userId).to.equal(1);\r",
+              "    pm.expect(response.id).to.equal(1);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "id": "dd9bf85d-a656-42bc-8793-68c3276da41b",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseURL}}/posts/:postId",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "path": [
+            "posts",
+            ":postId"
+          ],
+          "variable": [
+            {
+              "key": "postId",
+              "value": "1"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Post By Path Variable",
+      "id": "20f4a6d1-5a33-46ed-80c7-ea4493336a22",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseURL}}/posts",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "path": [
+            "posts"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "id": "6e14b8df-c6b4-44e0-aa31-905d3fb738ba",
+      "key": "baseURL",
+      "value": "",
+      "type": "default"
+    }
+  ]
+}

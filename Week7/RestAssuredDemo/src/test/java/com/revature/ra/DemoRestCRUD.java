@@ -76,8 +76,11 @@ public class DemoRestCRUD {
     @Order(2)
     @DisplayName("CREATE - Post with Java Object")
     public void testSerialObject() {
+        /*
         // Simple inner class for demo (normally in separate file)
         record Post(String title, String body, int userId) {} // Feature introduced in JDK 14 and finalized in JDK 16
+         */
+
         Post requestBody = new Post("POJO Test", "Testing a POJO Object", 1);
 
         Response response = given()

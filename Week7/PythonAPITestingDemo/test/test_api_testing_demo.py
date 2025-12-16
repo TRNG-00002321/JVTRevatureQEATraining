@@ -132,3 +132,28 @@ class TestResponseValidation:
             assert "body" in post
             assert isinstance(post["id"], int)
             assert isinstance(post["userId"], int)
+
+# ==========================================================
+# ERROR HANDLING TESTS
+# ==========================================================
+
+class TestErrorHandling:
+    """
+    Test negative scenarios and error responses.
+    """
+
+    def test_invalid_endpoint(self, base_url, session):
+        """Test 404 for invalid endpoint"""
+        response = session.get(f"{base_url}/invalid-endpoint")
+
+        # JSONPlaceholder returns empty object for invalid routes
+        assert response.status_code == 404 or response.json() == {}
+
+    def test_invalid_method(self, base_url, session):
+        """Test invalid HTTP method handling"""
+        # Try to POST to a single resource endpoint
+        response = session.post(f"{base_url}/posts/1", json={"title": "test"})
+
+        # JSONPlaceholder might accept this, real API would reject
+        # This demonstrates testing API behavior
+        assert response.status_code in [200, 201, 404, 405]

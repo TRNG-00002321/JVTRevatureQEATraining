@@ -178,4 +178,70 @@ public class DemoRestCRUD {
     public void delete_post_returnsEmptyObject() {
         // TODO: Implement
     }
+
+    @Test
+    @Order(13)
+    @DisplayName("Complete CRUD flow in single test")
+    public void completeCrudFlow_createReadUpdateDelete() {
+
+        // CREATE
+        String createBody = """
+            {
+                "title": "CRUD Test Post",
+                "body": "Testing complete CRUD flow",
+                "userId": 1
+            }
+            """;
+
+        int newId = given()
+                .spec(requestSpec)
+                .body(createBody)
+            .when()
+                .post("/posts")
+            .then()
+                .statusCode(201)
+                .body("title", Matchers.equalTo("CRUD Test Post"))
+                .extract()
+                .path("id");
+
+        System.out.println("Created ID: " + newId);
+
+        // READ
+        given()
+                .spec(requestSpec)
+        .when()
+                .get("/posts/" + newId)
+        .then()
+                .statusCode(200)
+                .body("id", Matchers.equalTo(newId));
+
+        // UPDATE
+        String updateBody = """
+            {
+                "id": %d,
+                "title": "Updated CRUD Test",
+                "body": "Body was updated",
+                "userId": 1
+            }
+            """.formatted(newId);
+
+        given()
+                .spec(requestSpec)
+                .body(updateBody)
+        .when()
+                .put("/posts/" + newId)
+        .then()
+                .statusCode(200)
+                .body("title", Matchers.equalTo("Updated CRUD Test"));
+
+        // DELETE
+        given()
+                .spec(requestSpec)
+        .when()
+                .delete("/posts/" + newId)
+        .then()
+                .statusCode(200);
+
+        System.out.println("CRUD flow completed successfully!");
+    }
 }

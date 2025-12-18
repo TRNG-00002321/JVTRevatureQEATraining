@@ -3,8 +3,12 @@ package com.revature.sel;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
+
+import java.util.List;
 
 @DisplayName("Finding Elements")
 public class Test02FindElements {
@@ -62,8 +66,8 @@ public class Test02FindElements {
     @Test
     public void testWithClick() {
         driver.get(BASE_URL + "/login");
-        WebElement userName = driver.findElement(By.id("username"));
-        WebElement pass = driver.findElement(By.id("password"));
+        // WebElement userName = driver.findElement(By.id("username"));
+        // WebElement pass = driver.findElement(By.id("password"));
         WebElement loginButton = driver.findElement(By.cssSelector(".fa.fa-2x.fa-sign-in"));
         if (!loginButton.isDisplayed()) {
             throw new IllegalStateException("Login button is not displayed");
@@ -144,5 +148,100 @@ public class Test02FindElements {
         WebElement loginButton = driver.findElement(By.cssSelector(".fa.fa-2x.fa-sign-in"));
 
         Assertions.assertTrue(loginButton.getText().toLowerCase().contains("login"));
+    }
+
+    @DisplayName("Complete login form interaction")
+    @ParameterizedTest
+    @CsvSource({
+            "tomsmith, SuperSecretPassword!, 1000"
+    })
+    public void completeForm_loginFlow(String inputUser, String inputPass, int waitTime) {
+        driver.get(BASE_URL + "/login");
+
+        // Find elements
+        WebElement userName = driver.findElement(By.name("username"));
+        WebElement pass = driver.findElement(By.name("password"));
+        WebElement loginButton = driver.findElement(By.cssSelector(".fa.fa-2x.fa-sign-in"));
+
+        // Verify elements are displayed and enabled
+        if (!loginButton.isDisplayed()) {
+            throw new IllegalStateException("Login button is not displayed");
+        }
+        if (!loginButton.isEnabled()) {
+            throw new IllegalStateException("Login button is not enabled");
+        }
+
+        // Clear and enter credentials
+        // username=tomsmith
+        // password=SuperSecretPassword!
+        userName.clear();
+        userName.sendKeys(inputUser);
+        pass.clear();
+        pass.sendKeys(inputPass);
+
+        // Verify input values
+        Assertions.assertEquals(inputUser, userName.getAttribute("value"));
+        Assertions.assertEquals(inputPass, pass.getAttribute("value"));
+
+        // Click login
+        try {
+            loginButton.click();
+
+            /*
+             * While it is normally best practice to implement waits,
+             * this is a bad way to implement waiting!
+             * Selenium has its own wait implementation that we will learn later.
+             */
+            Thread.sleep(waitTime);
+        } catch (ElementClickInterceptedException e) {
+            // Element obscured, try JavaScript click
+            ((JavascriptExecutor) driver).executeScript(
+                    "arguments[0].click()", loginButton
+            );
+        } catch (InterruptedException e) {
+            throw new IllegalStateException("testWithClick() was interrupted");
+        }
+
+        WebElement flash = driver.findElement(By.id("flash"));
+        String flashText = flash.getText();
+
+        // Verify success (check for success message or URL)
+        Assertions.assertTrue(flashText.contains("You logged into a secure area!") ||
+                        driver.getCurrentUrl().contains("secure"));
+    }
+
+    @DisplayName("Checkboxes - Checking All Boxes")
+    @Test
+    public void testCheckboxes1() {
+        driver.get(BASE_URL);
+        WebElement checkboxesRedirect = driver.findElement(By.cssSelector("a[href='/checkboxes']"));
+        try {
+            checkboxesRedirect.click();
+        } catch (ElementClickInterceptedException e) {
+            // Element obscured, try JavaScript click
+            ((JavascriptExecutor) driver).executeScript(
+                    "arguments[0].click()", checkboxesRedirect
+            );
+        }
+        List<WebElement> unselectedCheckboxes = driver.findElements(By.cssSelector("input:nth-child(1)"))
+                .stream()
+                .filter(element -> !element.isSelected())
+                .toList();
+
+        for (WebElement element : unselectedCheckboxes) {
+            try {
+                element.click();
+            } catch (ElementClickInterceptedException e) {
+                // Element obscured, try JavaScript click
+                ((JavascriptExecutor) driver).executeScript(
+                        "arguments[0].click()", checkboxesRedirect
+                );
+            }
+        }
+
+        List<WebElement> allCheckboxes = driver.findElements(By.cssSelector("input:nth-child(1)"));
+        for (WebElement element : allCheckboxes) {
+            Assertions.assertTrue(element.isSelected());
+        }
     }
 }

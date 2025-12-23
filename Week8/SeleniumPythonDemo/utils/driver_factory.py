@@ -23,9 +23,9 @@ def create_chrome_driver(headless: bool = False):
         # New headless mode (Chrome 109+)
         options.add_argument("--headless=new")
 
-        # Required for stability in headless mode
-        options.add_argument("--no-sandbox")
-        options.add_argument("--disable-dev-shm-usage")
+        # Required for stability in headless mode; already added below
+        # options.add_argument("--no-sandbox")
+        # options.add_argument("--disable-dev-shm-usage")
 
         # Set window size (important for headless - no auto-maximize)
         options.add_argument("--window-size=1920,1080")

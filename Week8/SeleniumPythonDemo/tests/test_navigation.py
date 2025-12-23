@@ -11,10 +11,11 @@ Implement tests that:
 
 from selenium.webdriver.common.by import By
 import sys
-
+import pytest
 sys.path.insert(0, '..')
 from utils.driver_factory import create_chrome_driver
 
+BASE_URL = "https://the-internet.herokuapp.com/"
 
 def test_navigate_to_login_page():
     """
@@ -26,8 +27,11 @@ def test_navigate_to_login_page():
     3. Assert URL contains "/login"
     4. Assert page contains "Login Page" heading
     """
-    # YOUR CODE HERE
-    pass
+    with create_chrome_driver(True) as driver:
+        driver.get(BASE_URL)
+        driver.find_element(By.CSS_SELECTOR, "a[href='/login']").click()
+        assert "/login" in driver.current_url
+        assert "Login Page" in driver.find_element(By.CSS_SELECTOR, "h2").text
 
 
 def test_back_forward_navigation():
@@ -42,8 +46,14 @@ def test_back_forward_navigation():
     5. Use driver.forward() to go forward
     6. Assert you're on the second page again
     """
-    # YOUR CODE HERE
-    pass
+    with create_chrome_driver(True) as driver:
+        driver.get(BASE_URL)
+        driver.find_element(By.CSS_SELECTOR, "a[href='/login']").click()
+        driver.back()
+        assert "Welcome to the-internet" in driver.find_element(By.CSS_SELECTOR, ".heading").text
+        driver.forward()
+        assert "/login" in driver.current_url
+        assert "Login Page" in driver.find_element(By.CSS_SELECTOR, "h2").text
 
 
 def test_capture_screenshot():
@@ -55,5 +65,7 @@ def test_capture_screenshot():
     2. Take a full page screenshot
     3. Save it to screenshots/homepage.png
     """
-    # YOUR CODE HERE
-    pass
+    with create_chrome_driver(True) as driver:
+        driver.get(BASE_URL)
+        success = driver.save_screenshot("screenshots/homepage.png")
+        assert success

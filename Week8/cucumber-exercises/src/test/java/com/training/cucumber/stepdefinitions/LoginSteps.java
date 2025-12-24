@@ -1,6 +1,7 @@
 package com.training.cucumber.stepdefinitions;
 
 import io.cucumber.java.After;
+import io.cucumber.java.Before;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.When;
 import io.cucumber.java.en.Then;
@@ -10,6 +11,10 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import io.github.bonigarcia.wdm.WebDriverManager;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
+import java.time.Duration;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -70,7 +75,12 @@ public class LoginSteps {
     public void theUserShouldSeeSuccessMessageContaining(String expectedMessage) {
         // Find the flash message element and verify it contains expected text
 
-        assertTrue(driver.findElement(By.id("flash")).getText().contains(expectedMessage),
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        WebElement flash = wait.until(
+                ExpectedConditions.visibilityOfElementLocated(By.id("flash"))
+        );
+        String actualMessage = flash.getText();
+        assertTrue(actualMessage.contains(expectedMessage),
                 "User did not see a success message containing " + expectedMessage);
     }
 
@@ -86,7 +96,12 @@ public class LoginSteps {
     public void theUserShouldSeeErrorMessageContaining(String expectedMessage) {
         // Find the flash message element and verify it contains expected error
 
-        assertTrue(driver.findElement(By.id("flash")).getText().contains(expectedMessage),
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        WebElement flash = wait.until(
+                ExpectedConditions.visibilityOfElementLocated(By.id("flash"))
+        );
+        String actualMessage = flash.getText();
+        assertTrue(actualMessage.contains(expectedMessage),
                 "User did not see an error message containing " + expectedMessage);
     }
 }

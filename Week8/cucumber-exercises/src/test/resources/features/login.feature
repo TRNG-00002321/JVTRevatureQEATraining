@@ -25,10 +25,20 @@ Feature: User Authentication
 
   @negative
   Scenario: Failed login with invalid username
-    # TODO: Implement this scenario
+    # DONE: Implement this scenario
     # Use username "invaliduser" and valid password format
+    When the user enters username "invaliduser"
+    And the user enters password "SuperSecretPassword!"
+    And the user clicks the login button
+    Then the user should remain on the login page
+    And the user should see an error message containing "Your username is invalid!"
 
   @negative
   Scenario: Failed login with empty credentials
-    # TODO: Implement this scenario
+    # DONE: Implement this scenario
     # Try to login with empty username and password
+    When the user enters username ""
+    And the user enters password ""
+    And the user clicks the login button
+    Then the user should remain on the login page
+    And the user should see an error message containing "invalid"

@@ -1,0 +1,17 @@
+GET /app/views/product-page.html HTTP/1.1
+Host: advantageonlineshopping.com
+Connection: keep-alive
+sec-ch-ua-platform: "Windows"
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36
+Accept: text/html
+sec-ch-ua: "Google Chrome";v="143", "Chromium";v="143", "Not A(Brand";v="24"
+DNT: 1
+sec-ch-ua-mobile: ?0
+Sec-Fetch-Site: same-origin
+Sec-Fetch-Mode: cors
+Sec-Fetch-Dest: empty
+Referer: https://advantageonlineshopping.com/
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: en
+Cookie: userCart=%7B%22userId%22%3A-1%2C%22productsInCart%22%3A%5B%5D%7D; _gid=GA1.2.1942207357.1767196440; _gat=1; _ga=GA1.1.1882700821.1767196440; _ga_TBPYED8WSW=GS2.1.s1767196444$o1$g0$t1767196444$j60$l0$h0; _ga_56EMNRF2S2=GS2.2.s1767196444$o1$g1$t1767196472$j32$l0$h0
+

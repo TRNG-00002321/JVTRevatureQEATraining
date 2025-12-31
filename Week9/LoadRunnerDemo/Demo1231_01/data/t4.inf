@@ -1,0 +1,13 @@
+[t4]
+FileName1=t4.json
+URL1=https://sstats.adobe.com/ee/v1/interact?configId=716bebe9-4dd6-40c2-a723-7942f40515e4
+Total=2
+RequestHeaderFile=t4_RequestHeader.txt
+RequestBodyFile=t4_RequestBody.txt
+ResponseHeaderFile=t4_ResponseHeader.txt
+ContentType=application/json
+SnapshotXmlFile=snapshot_4.xml
+FileName2=t4_main.min.css
+URL2=https://advantageonlineshopping.com/css/main.min.css
+[ProtocolInfo]
+ProtocolId=QTWeb

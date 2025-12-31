@@ -1,0 +1,11 @@
+[t22]
+FileName1=t22_24.json
+URL1=https://advantageonlineshopping.com/catalog/api/v1/products/24
+Total=1
+ContentType=application/json
+SnapshotXmlFile=snapshot_22.xml
+RequestHeaderFile=t22_RequestHeader.txt
+RequestBodyFile=NONE
+ResponseHeaderFile=t22_ResponseHeader.txt
+[ProtocolInfo]
+ProtocolId=QTWeb

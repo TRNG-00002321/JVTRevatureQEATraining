@@ -1,0 +1,17 @@
+[t5]
+FileName1=t5.json
+URL1=https://sstats.adobe.com/ee/irl1/v1/identity/acquire?configId=716bebe9-4dd6-40c2-a723-7942f40515e4
+Total=4
+RequestHeaderFile=t5_RequestHeader.txt
+RequestBodyFile=t5_RequestBody.txt
+ResponseHeaderFile=t5_ResponseHeader.txt
+ContentType=application/json
+SnapshotXmlFile=snapshot_5.xml
+FileName2=t5_require.html
+URL2=https://advantageonlineshopping.com/vendor/requirejs/require.js
+FileName3=t5_Down_arrow.svg
+URL3=https://advantageonlineshopping.com/css/images/Down_arrow.svg
+FileName4=t5_js.html
+URL4=https://www.googletagmanager.com/gtag/js?id=G-TBPYED8WSW
+[ProtocolInfo]
+ProtocolId=QTWeb

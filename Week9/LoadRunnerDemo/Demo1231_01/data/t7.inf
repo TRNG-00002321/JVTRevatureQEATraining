@@ -1,0 +1,15 @@
+[t7]
+FileName1=t7.json
+URL1=https://update.googleapis.com/service/update2/json?cup2key=15:3sp33kibNkjnbA6J4EnXveCSRMYGm6z0wuIThnK3ovk&cup2hreq=e473c8cab82fb871d971b5c30cd8d0d54ed6ec8f20925b2636b2b39136d322b5
+Total=3
+RequestHeaderFile=t7_RequestHeader.txt
+RequestBodyFile=t7_RequestBody.txt
+ResponseHeaderFile=t7_ResponseHeader.txt
+ContentType=application/json
+SnapshotXmlFile=snapshot_7.xml
+FileName2=t7_main.min.html
+URL2=https://advantageonlineshopping.com/main.min.js
+FileName3=t7_services.html
+URL3=https://advantageonlineshopping.com/services.properties
+[ProtocolInfo]
+ProtocolId=QTWeb

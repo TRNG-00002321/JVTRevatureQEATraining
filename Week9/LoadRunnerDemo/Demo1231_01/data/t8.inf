@@ -1,0 +1,13 @@
+[t8]
+FileName1=t8.txt
+URL1=https://clientservices.googleapis.com/uma/v2
+Total=2
+RequestHeaderFile=t8_RequestHeader.txt
+RequestBodyFile=t8_RequestBody.txt
+ResponseHeaderFile=t8_ResponseHeader.txt
+ContentType=text/plain
+SnapshotXmlFile=snapshot_8.xml
+FileName2=t8_analytics.html
+URL2=https://www.google-analytics.com/analytics.js
+[ProtocolInfo]
+ProtocolId=QTWeb

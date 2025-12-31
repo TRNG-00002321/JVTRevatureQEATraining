@@ -1,0 +1,18 @@
+HTTP/1.1 200 OK
+Access-Control-Allow-Origin: https://advantageonlineshopping.com
+Date: Wed, 31 Dec 2025 15:54:04 GMT
+Pragma: no-cache
+Expires: Fri, 01 Jan 1990 00:00:00 GMT
+Cache-Control: no-cache, no-store, must-revalidate
+Last-Modified: Sun, 17 May 1998 03:00:00 GMT
+Access-Control-Allow-Credentials: true
+X-Content-Type-Options: nosniff
+Content-Type: text/plain
+Cross-Origin-Resource-Policy: cross-origin
+Content-Security-Policy-Report-Only: script-src 'none'; form-action 'none'; frame-src 'none'; report-uri https://csp.withgoogle.com/csp/scaffolding/ascnsrsgac:211:0
+Cross-Origin-Opener-Policy-Report-Only: same-origin; report-to=ascnsrsgac:211:0
+Report-To: {"group":"ascnsrsgac:211:0","max_age":2592000,"endpoints":[{"url":"https://csp.withgoogle.com/csp/report-to/scaffolding/ascnsrsgac:211:0"}],}
+Server: Golfe2
+Content-Length: 15
+Alt-Svc: h3=":443"; ma=2592000,h3-29=":443"; ma=2592000
+

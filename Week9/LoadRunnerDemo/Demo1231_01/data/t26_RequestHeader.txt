@@ -1,0 +1,17 @@
+GET /app/views/shoppingCart.html HTTP/1.1
+Host: advantageonlineshopping.com
+Connection: keep-alive
+sec-ch-ua-platform: "Windows"
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36
+Accept: text/html
+sec-ch-ua: "Google Chrome";v="143", "Chromium";v="143", "Not A(Brand";v="24"
+DNT: 1
+sec-ch-ua-mobile: ?0
+Sec-Fetch-Site: same-origin
+Sec-Fetch-Mode: cors
+Sec-Fetch-Dest: empty
+Referer: https://advantageonlineshopping.com/
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: en
+Cookie: _gid=GA1.2.1942207357.1767196440; _gat=1; _ga=GA1.1.1882700821.1767196440; _ga_TBPYED8WSW=GS2.1.s1767196444$o1$g0$t1767196444$j60$l0$h0; userCart=%7B%22userId%22%3A-1%2C%22productsInCart%22%3A%5B%7B%22productId%22%3A24%2C%22imageUrl%22%3A%224600%22%2C%22productName%22%3A%22HP%20Roar%20Mini%20Wireless%20Speaker%22%2C%22color%22%3A%7B%22code%22%3A%22DD3A5B%22%2C%22name%22%3A%22RED%22%2C%22inStock%22%3A10%2C%22%24%24hashKey%22%3A%22object%3A302%22%7D%2C%22quantity%22%3A1%2C%22price%22%3A44.99%2C%22hasWarranty%22%3Afalse%7D%5D%7D; _ga_56EMNRF2S2=GS2.2.s1767196444$o1$g1$t1767196496$j8$l0$h0
+

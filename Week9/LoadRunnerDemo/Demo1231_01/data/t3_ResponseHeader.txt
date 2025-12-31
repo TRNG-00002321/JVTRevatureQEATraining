@@ -1,0 +1,15 @@
+HTTP/1.1 200 
+Server: nginx/1.18.0 (Ubuntu)
+Date: Wed, 31 Dec 2025 15:53:49 GMT
+Content-Type: text/html
+Transfer-Encoding: chunked
+Connection: keep-alive
+Accept-Ranges: bytes
+ETag: W/"11120-1723632370000"
+Last-Modified: Wed, 14 Aug 2024 10:46:10 GMT
+Cache-Control: max-age=0
+Expires: Wed, 31 Dec 2025 15:53:49 GMT
+vary: accept-encoding
+Content-Encoding: gzip
+Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+

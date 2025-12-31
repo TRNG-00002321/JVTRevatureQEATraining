@@ -1,0 +1,20 @@
+HTTP/1.1 200 OK
+x-request-id: eb6b6143-a053-43a0-9f62-ec3f57612c3c-84f969cf20184690
+vary: Origin
+access-control-allow-origin: chrome-extension://efaidnbmnnnibpcajpcglclefindmkaj
+access-control-allow-credentials: true
+access-control-expose-headers: Retry-After, X-Adobe-Edge, X-Request-ID
+date: Wed, 31 Dec 2025 15:53:49 GMT
+x-konductor: 25.9.9-HOTFIXMETRICSAVAILABILITYDURINGHIGHTRAFFIC:1ea882178
+x-adobe-edge: OR2;9
+server: jag
+set-cookie: kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_cluster=or2; Max-Age=1800; Domain=adobe.com; Path=/; $x-enc=URI_ENCODING
+content-encoding: gzip
+content-type: application/json;charset=utf-8
+cache-control: no-cache, no-store, max-age=0, no-transform, private
+x-xss-protection: 1; mode=block
+x-content-type-options: nosniff
+cross-origin-resource-policy: cross-origin
+strict-transport-security: max-age=31536000; includeSubDomains
+transfer-encoding: chunked
+

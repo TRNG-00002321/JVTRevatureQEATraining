@@ -1,0 +1,17 @@
+POST /ee/irl1/v1/identity/acquire?configId=716bebe9-4dd6-40c2-a723-7942f40515e4 HTTP/1.1
+Host: sstats.adobe.com
+Connection: keep-alive
+Content-Length: 41
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36
+DNT: 1
+Content-Type: application/json
+Accept: */*
+Origin: chrome-extension://efaidnbmnnnibpcajpcglclefindmkaj
+Sec-Fetch-Site: none
+Sec-Fetch-Mode: cors
+Sec-Fetch-Dest: empty
+Sec-Fetch-Storage-Access: active
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: en,en-US;q=0.9,es;q=0.8
+Cookie: AKA_A2=A; kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_identity=CiY4NjE1NTQxMzAxNTIyMTUzNjQ2NDU4NjQ5ODY4OTIzNDQ2MzU3OVISCJSroqO3MhABGAEqA09SMjAA8AHt%2DMCntzM%3D
+

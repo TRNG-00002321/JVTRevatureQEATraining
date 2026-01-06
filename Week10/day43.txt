@@ -1,0 +1,418 @@
+Jeremiah Trinh
+01/06/2026
+QEA Training - Day 43
+
+
+intro-to-aws-s3.md
+===================================================================================================
+Amazon Simple Storage Service (S3) is object storage built to store and retrieve any amount of data from anywhere. 
+Unlike block storage (EBS) or file storage (EFS), S3 stores data as objects--complete files with metadata.
+
+*Our final project is supposed to be deployed on an EC2 instance within a Docker container.
+*Our allure reports shall also be placed on S3.
+*Our EC2 instance will pull our code from Github via a pipeline.
+
+S3 Key Characteristics:
+- Durability
+- Availability
+- Scalability (unlimited storage, no capacity planning needed)
+- Security (encryption at rest and in transit)
+- Cost (pay as you go)
+- Performance
+
+S3 organizes data into buckets containing objects.
+(Refer to figure on study guide for visual of S3 structure)
+Bucket characteristics:
+- Bucket names are unique across AWS (globally, not just within your account).
+	-Bucket naming convention dictates that you include your acct name as well as the date and time.
+- Buckets are region-specific.
+- Flat namespace (no true folders, just key prefixes)
+- Unlimited objects per bucket
+- Object size: 0 bytes to 5 TB
+Object components:
+- Key: Unique identifier w/in bucket (the "filename")
+- Value: The actual data (up to 5 TB)
+- Metadata: Key-value pairs describing the object
+- Version ID: If versioning enabled
+
+S3 Storage Classes: (refer to study guide for table)
+Standard: Frequent access, general purpose
+Standard-IA: Infrequent access, min 30 days, 128KB
+One Zone-IA: Infrequent, single AZ, less durability
+Glacier Instant Retrieval: Archive, instant access
+Glacier Flexible Retrieval: Archive, minutes to hours retrieval
+Glacier Deep Archive: Long-term archive, 12+ hours to retrieve
+Intelligent-Tiering: Unknown access, auto-moves the data between the other storage classes
+
+*(also refer to study guide for selection guide to these storage classes)
+
+Versioning keeps multiple variants of an object in the same bucket
+
+Lifecycle policies automate moving objs btwn storage classes or deleting them
+
+S3 provides multiple access control mechanisms:
+- Bucket policies (JSON-based, recommended)
+- IAM policies (user-based)
+- Access control lists (legacy)
+- S3 access points (simplified access)
+
+Static Website Hosting:
+S3 can host static websites (HTML, CSS, Javascript).
+===================================================================================================
+
+
+===================================================================================================
+[] Complete exercise_s3_static_site
+	*Jasdhir requested that we modify the index.html so that each of our websites are different
+[] Complete exercise_rds_connection
+===================================================================================================
+
+
+rds-introduction.md
+===================================================================================================
+Amazon Relational Database Service (RDS) is a managed service that simplifies the setup, operation, and scaling of relational databases in the cloud.
+RDS handles time-consuming administration tasks while you focus on your application and users.
+
+Supported Database Engines:
+- Amazon Aurora
+- MySQL
+- PostgreSQL
+- MariaDB
+- Oracle
+- SQL Server
+
+(Refer to study guide for database engine selection guide)
+
+RDS instance classes:
+- Standard (m)
+- Memory Optimized (r)
+- Burstable (t)
+
+# Instance naming convention: db.{class}{generation}.{size}
+
+Multi-AZ Deployments
+Multi-AZ provides high availability by automatically maintaining a synchronous standby replica in a different Availability Zone.
+Benefits:
+- Automatic failover during AZ outage, hardware failure, or maintenance
+- Same endpoint (DNS) works before and after failover
+- Synchronous replication ensures zero data loss
+- Automatic backups taken from standby (no performance impact on primary)
+
+Read replicas are the read-only replicas of your databases.
+The benefit? -> Faster DB, DB queries do not slow down your primary DB; save that workload for more expensive operations (edits, pushes, etc.)
+Read replicas scale read-heavy workloads by offloading read traffic from the primary.
+
+*While creating your RDS, make sure to not to check the store backup option. 
+	Storing backups charge a fee. 
+	You have to ensure to delete all backups of your RDS instances while you're learning RDS.
+===================================================================================================
+
+
+ec2-autoscaling.md
+===================================================================================================
+Autoscaling is a feature of a group.
+Whenever we have an application or system that requires autoscaling, we create an autoscaling group.
+When we create an autoscaling group, we always develop the following:
+- Min cap: minimum number of nodes
+- Desired capacity: desired number of nodes
+- Max cap: maximum number of nodes
+- Increment: step amount, how much the number of nodes changes when scaling up/down
+
+EC2 Auto Scaling automatically adjusts the number of EC2 instances in your application based on conditions you define. 
+It ensures you have the right number of instances available to handle your application load.
+Benefits:
+- Availability
+- Cost Optimization
+- Fault Tolerance
+
+*(Refer to study guide for figures on EC2 instance types and instance naming convention)
+
+A Launch Template defines the configuration for instances that Auto Scaling will launch: (refer to study guide figure)
+Benefits:
+- Versioning: Create new versions without replacing the template
+- Inheritance: New versions can inherit from previous versions
+- Multiple instance types: Support mixed instance policies
+
+An Auto Scaling Group (ASG) is a collection of EC2 instances treated as a logical grouping for scaling and management:
+(Refer to study guide figure)
+Capacity Settings:
+- Minimum: Never go below this count (ensures availability)
+- Desired: The target number of healthy instances
+- Maximum: Never exceed this count (controls costs)
+
+Auto Scaling supports multiple scaling policy types: (refer to study guide figures)
+1) Target Tracking Scaling
+	The simplest and most common approach—you specify a target metric value
+2) Step Scaling
+	More granular control with different actions at different thresholds
+3) Scheduled Scaling
+	Scale based on known patterns
+	
+Auto Scaling works best with Elastic Load Balancing (ELB):
+(Refer to study guide figure for visual on EC2 Autoscaling Integration With Load Balancers)
+Health Check Types:
+EC2: Instance is healthy if running (basic check)
+ELB: Instance is healthy if passing load balancer health checks (recommended)
+
+Scaling Best Practices: 
+┌─────────────────────────────────────────────────────────────────┐
+│                 Auto Scaling Best Practices                     │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  1. USE MULTIPLE AZs                                            │
+│     Deploy across at least 2 AZs for fault tolerance            │
+│                                                                 │
+│  2. SET APPROPRIATE COOLDOWN PERIODS                            │
+│     Prevent rapid scaling oscillations (default 300 seconds)    │
+│                                                                 │
+│  3. USE ELB HEALTH CHECKS                                       │
+│     More accurate than EC2 health checks alone                  │
+│                                                                 │
+│  4. CONFIGURE GRACE PERIOD                                      │
+│     Allow time for instances to bootstrap before health checks  │
+│                                                                 │
+│  5. USE LIFECYCLE HOOKS                                         │
+│     Run custom actions during launch/termination                │
+│                                                                 │
+│  6. PREFER TARGET TRACKING                                      │
+│     Simpler to configure and self-adjusting                     │
+│                                                                 │
+│  7. MONITOR SCALING ACTIVITIES                                  │
+│     Use CloudWatch to track scaling events and metrics          │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+===================================================================================================
+
+
+docker-introduction.md
+===================================================================================================
+"It works on my machine" is the bane of software teams everywhere. 
+Ideally, Docker eliminates this problem by packaging applications with their dependencies into portabale containers.
+By creating a sandbox environment, we can consistently reproduce and simulate the execution environment of our applications.
+Understanding Docker is essential for modern DevOps practices--it bridges the gap between development and operations.
+
+Docker is a platform for developing, shipping, and running applications in containers.
+A container packages an application and all its dependencies into a standardized unit that runs consistently across any environment.
+┌─────────────────────────────────────────────────────────────────────┐
+│                    What Docker Provides                             │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   PACKAGE                SHIP                   RUN                 │
+│   ───────                ────                   ───                 │
+│   Bundle application     Distribute via         Execute anywhere    │
+│   + dependencies         container registries   Docker is installed │
+│   into image                                                        │
+│                                                                     │
+│   ┌─────────────┐       ┌─────────────┐       ┌─────────────┐       │
+│   │  Dockerfile │  ──▶  │  Docker     │  ──▶ │  Running    │       │
+│   │  + App Code │  build│  Image      │  push │  Container  │       │
+│   │  + Deps     │       │             │  /run │             │       │
+│   └─────────────┘       └─────────────┘       └─────────────┘       │
+│                                                                     │
+│   Developer Laptop ──▶ CI/CD Pipeline ──▶ Production               │
+│        Same container runs everywhere                               │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+
+Containerization vs Virtualization
+Docker containers are fundamentally different from virtual machines: (Refer to figure in study guide)
+Key Differences:
+- Size
+- Startup
+- Performance
+- Isolation
+- Portability
+- Density
+
+Docker uses a client-server architecture:
+┌─────────────────────────────────────────────────────────────────────┐
+│                     Docker Architecture                             │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   ┌─────────────────┐                                               │
+│   │  Docker Client  │                                               │
+│   │  (docker CLI)   │                                               │
+│   │                 │                                               │
+│   │  docker build   │                                               │
+│   │  docker pull    │──────────┐                                    │
+│   │  docker run     │          │                                    │
+│   └─────────────────┘          │ REST API                           │
+│                                │ (Unix socket or TCP)               │
+│                                ▼                                    │
+│   ┌─────────────────────────────────────────────────────────────┐   │
+│   │                    Docker Daemon (dockerd)                  │   │
+│   │                                                             │   │
+│   │   ┌─────────────┐  ┌─────────────┐  ┌─────────────┐         │   │
+│   │   │   Images    │  │  Containers │  │  Networks   │         │   │
+│   │   └─────────────┘  └─────────────┘  └─────────────┘         │   │
+│   │                                                             │   │
+│   │   ┌─────────────┐  ┌─────────────┐                          │   │
+│   │   │   Volumes   │  │  Plugins    │                          │   │
+│   │   └─────────────┘  └─────────────┘                          │   │
+│   │                                                             │   │
+│   └─────────────────────────────────────────────────────────────┘   │
+│                                │                                    │
+│                                │ Pull images                        │
+│                                ▼                                    │
+│   ┌─────────────────────────────────────────────────────────────┐   │
+│   │                    Docker Registry                          │   │
+│   │                   (Docker Hub, ECR, etc.)                   │   │
+│   │                                                             │   │
+│   │    ┌──────┐  ┌──────┐  ┌──────┐  ┌──────┐                   │   │
+│   │    │nginx │  │python│  │mysql │  │redis │  ...              │   │
+│   │    └──────┘  └──────┘  └──────┘  └──────┘                   │   │
+│   │                                                             │   │
+│   └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+Components:
+- Docker Client:	CLI tool (docker) that sends commands to daemon
+- Docker Daemon:	Background service managing containers, images, networks
+- Docker Registry:	Storage for Docker images (Docker Hub is default public registry)
+- Docker Objects:	Images, containers, networks, volumes
+
+┌─────────────────────────────────────────────────────────────────────┐
+│                      Docker Benefits                                │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   FOR DEVELOPERS                                                    │
+│   ──────────────                                                    │
+│   ✓ Consistent environments (dev = test = prod)                     │
+│   ✓ Quick onboarding (docker-compose up)                            │
+│   ✓ Isolated dependencies (no conflicts between projects)           │
+│   ✓ Easy cleanup (docker rm removes everything)                     │
+│                                                                     │
+│   FOR QUALITY ENGINEERS                                             │
+│   ─────────────────────                                             │
+│   ✓ Reproducible test environments                                  │
+│   ✓ Parallel testing with isolated containers                       │
+│   ✓ Easy database/service mocking                                   │
+│   ✓ Consistent CI/CD test execution                                 │
+│                                                                     │
+│   FOR OPERATIONS                                                    │
+│   ──────────────                                                    │
+│   ✓ Easy deployment and rollback                                    │
+│   ✓ Resource efficiency (higher density than VMs)                   │
+│   ✓ Scalability (orchestration with Kubernetes)                     │
+│   ✓ Microservices architecture support                              │
+│                                                                     │
+│   FOR EVERYONE                                                      │
+│   ────────────                                                      │
+│   ✓ Version control for infrastructure                              │
+│   ✓ Documentation as code (Dockerfile)                              │
+│   ✓ Faster delivery cycles                                          │
+│   ✓ Platform independence                                           │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+
+Docker is part of a larger ecosystem of tools:
+┌─────────────────────────────────────────────────────────────────────┐
+│                     Docker Ecosystem                                │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   CORE TOOLS                                                        │
+│   ──────────                                                        │
+│   Docker Engine      Core container runtime                         │
+│   Docker CLI         Command-line interface                         │
+│   Docker Compose     Multi-container application definition         │
+│   Docker Desktop     GUI for Windows/Mac                            │
+│                                                                     │
+│   REGISTRIES                                                        │
+│   ──────────                                                        │
+│   Docker Hub         Public registry (official images)              │
+│   Amazon ECR         AWS container registry                         │
+│   Google GCR         Google container registry                      │
+│   Azure ACR          Azure container registry                       │
+│   Harbor             Self-hosted registry                           │
+│                                                                     │
+│   ORCHESTRATION                                                     │
+│   ─────────────                                                     │
+│   Docker Swarm       Docker's native orchestration                  │
+│   Kubernetes         Industry-standard orchestration                │
+│   Amazon ECS         AWS container service                          │
+│   Amazon EKS         AWS managed Kubernetes                         │
+│                                                                     │
+│   RELATED TOOLS                                                     │
+│   ─────────────                                                     │
+│   Buildah            Build OCI images without daemon                │
+│   Podman             Daemonless container engine                    │
+│   containerd         Industry-standard container runtime            │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────┐
+│              Docker Desktop vs Docker Engine                        │
+├─────────────────────────────┬───────────────────────────────────────┤
+│      DOCKER DESKTOP         │         DOCKER ENGINE                 │
+├─────────────────────────────┼───────────────────────────────────────┤
+│                             │                                       │
+│   FOR: Windows, macOS       │   FOR: Linux servers                  │
+│                             │                                       │
+│   • GUI interface           │   • CLI only                          │
+│   • Easy installation       │   • Lightweight                       │
+│   • Includes Kubernetes     │   • Production-ready                  │
+│   • WSL 2 integration       │   • Native performance                │
+│   • Automatic updates       │   • Full control                      │
+│                             │                                       │
+│   Use for:                  │   Use for:                            │
+│   • Local development       │   • Production servers                │
+│   • Learning Docker         │   • CI/CD runners                     │
+│   • Testing applications    │   • Cloud deployments                 │
+│                             │                                       │
+│   License:                  │   License:                            │
+│   Free for small business,  │   Open source (Apache 2.0)            │
+│   education, personal       │   Free for all uses                   │
+│   Paid for large enterprise │                                       │
+│                             │                                       │
+└─────────────────────────────┴───────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│                   Core Docker Concepts                              │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   IMAGE                                                             │
+│   ─────                                                             │
+│   Read-only template for creating containers                        │
+│   Built from a Dockerfile                                           │
+│   Composed of layers (each instruction adds a layer)                │
+│                                                                     │
+│   CONTAINER                                                         │
+│   ─────────                                                         │
+│   Running instance of an image                                      │
+│   Isolated process with its own filesystem, network, etc.           │
+│   Can be started, stopped, moved, deleted                           │
+│                                                                     │
+│   DOCKERFILE                                                        │
+│   ──────────                                                        │
+│   Text file with instructions to build an image                     │
+│   Version-controlled definition of your environment                 │
+│   "Infrastructure as Code"                                          │
+│                                                                     │
+│   REGISTRY                                                          │
+│   ────────                                                          │
+│   Storage for Docker images                                         │
+│   Docker Hub (default), ECR, GCR, private registries                │
+│   Push and pull images                                              │
+│                                                                     │
+│   VOLUME                                                            │
+│   ──────                                                            │
+│   Persistent data storage                                           │
+│   Survives container lifecycle                                      │
+│   Can be shared between containers                                  │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+An image is everything needed to run your Docker container. 
+An image is a template with which a Docker container is created.
+A container is a running instance of an image.
+A dockerfile is used to create an image.
+A dockerfile contains the commands and instructions to build an image.
+Registry is where you will store your Docker image.
+You can pull and push registries via Docker Hub.
+If you need to store data from a Docker container persistently when you launch a different Docker container or when said container restarts,
+	you need to store that data within a location.
+	That location is called a volume.
+===================================================================================================
+
+containerization.md (self-study [])
+===================================================================================================
+TODO: Take notes
+===================================================================================================

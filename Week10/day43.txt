@@ -407,7 +407,8 @@ A dockerfile is used to create an image.
 A dockerfile contains the commands and instructions to build an image.
 Registry is where you will store your Docker image.
 You can pull and push registries via Docker Hub.
-If you need to store data from a Docker container persistently when you launch a different Docker container or when said container restarts,
+If you need to store data from a Docker container persistently when you 
+	launch a different Docker container or when said container restarts,
 	you need to store that data within a location.
 	That location is called a volume.
 ===================================================================================================
@@ -415,4 +416,319 @@ If you need to store data from a Docker container persistently when you launch a
 containerization.md (self-study [])
 ===================================================================================================
 TODO: Take notes
+Why This Matters
+*From Code to Cloud: Mastering the Modern Deployment Pipeline*
+Containerization is the foundation of modern application deployment. 
+Understanding how containers work—not just how to use them—helps you troubleshoot issues, optimize 
+performance, and make informed architecture decisions. 
+When tests fail in containerized environments, knowing the underlying technology helps you 
+identify whether the issue is application code, container configuration, or resource constraints.
+
+As a quality engineer working with CI/CD pipelines, you'll encounter containers at every stage: 
+building applications, running tests, and deploying to production. 
+This foundational knowledge transforms containers from "magic boxes" into 
+understandable, predictable technology.
+
+Containerization is a lightweight form of virtualization that packages an application 
+and its dependencies together in an isolated environment called a container.
+Unlike virtual machines, containers share the host operating system's kernel while maintaining
+isolation through Linux kernel features.
+┌─────────────────────────────────────────────────────────────────────┐
+│                    Containerization Concept                         │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   Traditional Deployment          Containerized Deployment          │
+│   ──────────────────────          ────────────────────────          │
+│                                                                     │
+│   ┌──────────────────┐           ┌──────────────────┐               │
+│   │  Application     │           │  ┌────────────┐  │               │
+│   │  depends on:     │           │  │ Container  │  │               │
+│   │  - Python 3.8    │           │  │ ┌────────┐ │  │               │
+│   │  - NumPy 1.19    │           │  │ │  App   │ │  │               │
+│   │  - /etc/myconfig │           │  │ │Python  │ │  │               │
+│   │                  │           │  │ │NumPy   │ │  │               │
+│   │  "Works on my    │           │  │ │Config  │ │  │               │
+│   │   machine..."    │           │  │ └────────┘ │  │               │
+│   └──────────────────┘           │  └────────────┘  │               │
+│           │                      │                  │               │
+│           ▼                      │  Everything      │               │
+│   Different machine has:         │  packaged        │               │
+│   - Python 3.10 (wrong!)         │  together        │               │
+│   - NumPy 1.24 (wrong!)          │                  │               │
+│   - Missing config               │  Works anywhere  │               │
+│                                  │  Docker runs     │               │
+│   ❌ Broken deployment           └──────────────────┘               │
+│                                                                     │
+│                                  ✅ Consistent deployment           │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+
+How Containers Achieve Isolation:
+┌─────────────────────────────────────────────────────────────────────┐
+│                    Container Isolation Technology                   │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   NAMESPACES (What a container can see)                             │
+│   ─────────────────────────────────────                             │
+│                                                                     │
+│   ┌─────────────────────────────────────────────────────────────┐   │
+│   │  Namespace     │  Isolates                                  │   │
+│   ├─────────────────────────────────────────────────────────────┤   │
+│   │  PID           │  Process IDs (container sees only its      │   │
+│   │                │  processes, PID 1 is container's init)     │   │
+│   ├─────────────────────────────────────────────────────────────┤   │
+│   │  NET           │  Network interfaces, IP addresses, ports   │   │
+│   │                │  (container has its own network stack)     │   │
+│   ├─────────────────────────────────────────────────────────────┤   │
+│   │  MNT           │  Mount points (filesystem view)            │   │
+│   │                │  (container has its own root filesystem)   │   │
+│   ├─────────────────────────────────────────────────────────────┤   │
+│   │  UTS           │  Hostname and domain name                  │   │
+│   │                │  (container has its own hostname)          │   │
+│   ├─────────────────────────────────────────────────────────────┤   │
+│   │  IPC           │  Inter-process communication               │   │
+│   │                │  (message queues, semaphores)              │   │
+│   ├─────────────────────────────────────────────────────────────┤   │
+│   │  USER          │  User and group IDs                        │   │
+│   │                │  (root in container ≠ root on host)        │   │
+│   └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│   CGROUPS (What a container can use)                                │
+│   ──────────────────────────────────                                │
+│                                                                     │
+│   ┌─────────────────────────────────────────────────────────────┐   │
+│   │  cgroup        │  Controls                                  │   │
+│   ├─────────────────────────────────────────────────────────────┤   │
+│   │  CPU           │  CPU time allocation                       │   │
+│   │                │  (e.g., limit to 50% of one core)          │   │
+│   ├─────────────────────────────────────────────────────────────┤   │
+│   │  Memory        │  RAM usage limits                          │   │
+│   │                │  (e.g., max 512MB, OOM kill if exceeded)   │   │
+│   ├─────────────────────────────────────────────────────────────┤   │
+│   │  I/O           │  Disk read/write bandwidth                 │   │
+│   │                │  (e.g., max 100MB/s)                       │   │
+│   ├─────────────────────────────────────────────────────────────┤   │
+│   │  Network       │  Network bandwidth                         │   │
+│   │                │  (e.g., max 10Mbps)                        │   │
+│   └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+
+Container Lifecycle
+Understanding the container lifecycle helps you manage containers effectively:
+┌─────────────────────────────────────────────────────────────────────┐
+│                     Container Lifecycle                             │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   ┌─────────────────────────────────────────────────────────────┐   │
+│   │                                                             │   │
+│   │                     ┌───────────┐                           │   │
+│   │    docker create    │  CREATED  │                           │   │
+│   │    ───────────────▶ │           │                           │   │
+│   │                     └─────┬─────┘                           │   │
+│   │                           │                                 │   │
+│   │                    docker start                             │   │
+│   │                           │                                 │   │
+│   │                           ▼                                 │   │
+│   │   ┌─────────┐      ┌───────────┐      ┌──────────┐          │   │
+│   │   │ PAUSED  │◀────▶│  RUNNING  │─────▶│  EXITED  │         │   │
+│   │   └─────────┘      └───────────┘      └────┬─────┘          │   │
+│   │    docker pause     docker stop/           │                │   │
+│   │    docker unpause   process exit           │                │   │
+│   │                                      docker start           │   │
+│   │                                            │                │   │
+│   │                                            ▼                │   │
+│   │                                    ┌───────────┐            │   │
+│   │                                    │  RUNNING  │            │   │
+│   │                                    └───────────┘            │   │
+│   │                                                             │   │
+│   │   From any state: docker rm ───────▶ REMOVED                │   │
+│   │                                                             │   │
+│   └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│   Common Commands:                                                  │
+│   docker run = docker create + docker start                         │
+│   docker run -d = run in background (detached)                      │
+│   docker run --rm = remove container when it exits                  │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+
+Stateless vs Stateful Containers
+Understanding state is crucial for container design:
+┌─────────────────────────────────────────────────────────────────────┐
+│              Stateless vs Stateful Containers                       │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   STATELESS CONTAINERS (Recommended default)                        │
+│   ─────────────────────────────────────────                         │
+│                                                                     │
+│   ┌─────────────┐    ┌─────────────┐    ┌─────────────┐             │
+│   │ Container 1 │    │ Container 2 │    │ Container 3 │             │
+│   │             │    │             │    │             │             │
+│   │  Same app   │    │  Same app   │    │  Same app   │             │
+│   │  No local   │    │  No local   │    │  No local   │             │
+│   │  state      │    │  state      │    │  state      │             │
+│   └──────┬──────┘    └──────┬──────┘    └──────┬──────┘             │
+│          │                  │                  │                    │
+│          └──────────────────┼──────────────────┘                    │
+│                             │                                       │
+│                             ▼                                       │
+│                    ┌─────────────────┐                              │
+│                    │ External State  │                              │
+│                    │ (Database, S3)  │                              │
+│                    └─────────────────┘                              │
+│                                                                     │
+│   Benefits:                                                         │
+│   ✓ Any container can handle any request                            │
+│   ✓ Easy to scale up/down                                           │
+│   ✓ Easy to replace failed containers                               │
+│   ✓ Predictable behavior                                            │
+│                                                                     │
+│   ───────────────────────────────────────────────────────────────   │
+│                                                                     │
+│   STATEFUL CONTAINERS (Use with caution)                            │
+│   ──────────────────────────────────────                            │
+│                                                                     │
+│   ┌─────────────────────────────────────────────────────────────┐   │
+│   │              ┌─────────────┐                                │   │
+│   │              │  Container  │                                │   │
+│   │              │             │                                │   │
+│   │              │  Database   │                                │   │
+│   │              │  Server     │                                │   │
+│   │              └──────┬──────┘                                │   │
+│   │                     │                                       │   │
+│   │                     ▼                                       │   │
+│   │              ┌─────────────┐                                │   │
+│   │              │   Volume    │  Persistent storage            │   │
+│   │              │   (data)    │  survives container restarts   │   │
+│   │              └─────────────┘                                │   │
+│   └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│   Considerations:                                                   │
+│   • Requires volume management                                      │
+│   • More complex backup/recovery                                    │
+│   • Can't easily scale horizontally                                 │
+│   • Container identity matters                                      │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+
+Microservices Architecture Fit
+Containers are ideal for microservices architecture:
+┌─────────────────────────────────────────────────────────────────────┐
+│              Containers and Microservices                           │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   MONOLITHIC APPLICATION                                            │
+│   ──────────────────────                                            │
+│                                                                     │
+│   ┌─────────────────────────────────────────────────────────────┐   │
+│   │                    Single Deployment Unit                   │   │
+│   │                                                             │   │
+│   │   ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────────────┐   │   │
+│   │   │  User   │ │ Product │ │  Order  │ │    Payment      │   │   │
+│   │   │ Module  │ │ Module  │ │ Module  │ │    Module       │   │   │
+│   │   └─────────┘ └─────────┘ └─────────┘ └─────────────────┘   │   │
+│   │                                                             │   │
+│   │   All modules deployed together, scale together, fail       │   │
+│   │   together                                                  │   │
+│   └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│   ───────────────────────────────────────────────────────────────   │
+│                                                                     │
+│   MICROSERVICES WITH CONTAINERS                                     │
+│   ─────────────────────────────                                     │
+│                                                                     │
+│   ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────────────┐        │
+│   │  User   │  │ Product │  │  Order  │  │    Payment      │        │
+│   │ Service │  │ Service │  │ Service │  │    Service      │        │
+│   │         │  │         │  │         │  │                 │        │
+│   │Container│  │Container│  │Container│  │   Container     │        │
+│   └────┬────┘  └────┬────┘  └────┬────┘  └───────┬─────────┘        │
+│        │            │            │               │                  │
+│        └────────────┴──────┬─────┴───────────────┘                  │
+│                            │                                        │
+│                    API Gateway / Service Mesh                       │
+│                                                                     │
+│   Benefits:                                                         │
+│   ✓ Independent deployment (deploy Order without User)              │
+│   ✓ Independent scaling (scale Payment during checkout)             │
+│   ✓ Technology diversity (User in Python, Order in Java)            │
+│   ✓ Fault isolation (Order crash doesn't affect User)               │
+│   ✓ Team autonomy (different teams own different services)          │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────┐
+│           Traditional vs Container Deployment Comparison            │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   Aspect              Traditional          Container                │
+│   ──────              ───────────          ─────────                │
+│                                                                     │
+│   Deployment          Manual installs,     docker pull/run          │
+│                       scripts, config                               │
+│                                                                     │
+│   Environment         Configuration        Defined in Dockerfile,   │
+│   Definition          documentation        version controlled       │
+│                                                                     │
+│   Dependencies        System-wide,         Per-container,           │
+│                       conflicts possible   isolated                 │
+│                                                                     │
+│   Scaling             Manual provisioning  Orchestrator handles     │
+│                       and configuration    (Kubernetes, ECS)        │
+│                                                                     │
+│   Rollback            Restore from backup, docker run old-image     │
+│                       reconfigure                                   │
+│                                                                     │
+│   Resource Usage      Full OS per VM       Shared kernel,           │
+│                       or dedicated server  lightweight              │
+│                                                                     │
+│   Startup Time        Minutes              Seconds                  │
+│                                                                     │
+│   Testing             "Works on my         Same image everywhere    │
+│   Consistency         machine" syndrome                             │
+│                                                                     │
+│   Security Updates    Manual patching      Rebuild image,           │
+│                       per server           redeploy                 │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────┐
+│                  Container Security Overview                        │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   ISOLATION IS NOT COMPLETE                                         │
+│   ─────────────────────────                                         │
+│   • Containers share host kernel                                    │
+│   • Kernel vulnerabilities affect all containers                    │
+│   • Not as isolated as VMs                                          │
+│                                                                     │
+│   BEST PRACTICES                                                    │
+│   ──────────────                                                    │
+│   ✓ Don't run as root inside containers                             │
+│   ✓ Use minimal base images (alpine, distroless)                    │
+│   ✓ Scan images for vulnerabilities                                 │
+│   ✓ Keep base images updated                                        │
+│   ✓ Don't store secrets in images                                   │
+│   ✓ Use read-only filesystems when possible                         │
+│   ✓ Limit container capabilities                                    │
+│   ✓ Set resource limits (prevent DoS)                               │
+│                                                                     │
+│   RUNTIME SECURITY                                                  │
+│   ────────────────                                                  │
+│   • AppArmor / SELinux profiles                                     │
+│   • Seccomp (limit system calls)                                    │
+│   • User namespaces (rootless containers)                           │
+│   • Network policies                                                │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+
+Summary:
+Containerization packages applications with dependencies in isolated environments sharing the host kernel
+Namespaces provide isolation of what containers can see (processes, network, filesystem, etc.)
+Cgroups control resource limits (CPU, memory, I/O) for containers
+Container lifecycle moves through created, running, paused, exited, and removed states
+Stateless containers (no local state) are easier to scale and replace; use external storage for data
+Microservices architecture benefits from containers: independent deployment, scaling, and technology diversity
+Containers are lighter than VMs but have less isolation; follow security best practices
 ===================================================================================================

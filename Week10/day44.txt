@@ -1023,4 +1023,234 @@ and optimize build times in Jenkins pipelines.
 # Jenkins will be covered later -> Friday, 01/09/2026
 
 THE CONCEPT
+A Dockerfile is a text file containing instructions for building a Docker image. 
+Each instruction creates a layer in the resulting image.
+┌─────────────────────────────────────────────────────────────────────┐
+│                    Dockerfile to Image                              │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   Dockerfile                        docker build                    │
+│   ──────────                        ────────────                    │
+│   ┌─────────────────────┐          ┌─────────────────────┐          │
+│   │ FROM python:3.11    │          │     Image           │          │
+│   │ WORKDIR /app        │   ────▶  │                     │          │
+│   │ COPY . .            │          │   ┌─────────────┐   │          │
+│   │ RUN pip install     │          │   │  Layer 4    │   │          │
+│   │ CMD ["python",      │          │   ├─────────────┤   │          │
+│   │      "app.py"]      │          │   │  Layer 3    │   │          │
+│   └─────────────────────┘          │   ├─────────────┤   │          │
+│                                    │   │  Layer 2    │   │          │
+│                                    │   ├─────────────┤   │          │
+│                                    │   │  Layer 1    │   │          │
+│                                    │   └─────────────┘   │          │
+│                                    └─────────────────────┘          │
+│                                                                     │
+│   Each instruction → One layer                                      │
+│   Layers are cached and reusable                                    │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+
+Essential Dockerfile Instructions:
+┌─────────────────────────────────────────────────────────────────────────┐
+│                  Dockerfile Instructions                             	  │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                      	  │
+│   INSTRUCTION    PURPOSE                       EXAMPLE               	  │
+│   ───────────    ───────                       ───────               	  │
+│                                                                      	  │
+│   FROM           Base image                    FROM python:3.11     	  │
+│                  (required, first)             FROM ubuntu:22.04    	  │
+│                                                                      	  │
+│   WORKDIR        Set working directory         WORKDIR /app         	  │
+│                  (creates if not exists)                            	  │
+│                                                                      	  │
+│   COPY           Copy files from build         COPY . /app          	  │
+│                  context into image            COPY app.py .        	  │
+│                                                                      	  │
+│   ADD            Like COPY, plus:              ADD archive.tar /    	  │
+│                  - Extract archives            ADD https://... /    	  │
+│                  - Download URLs                                    	  │
+│                                                                      	  │
+│   RUN            Execute command during        RUN pip install -r \ 	  │
+│                  build (creates layer)             requirements.txt 	  │
+│                                                                      	  │
+│   ENV            Set environment variable      ENV APP_ENV=prod     	  │
+│                  (available at build           ENV PORT=8080        	  │
+│                  and runtime)                                       	  │
+│                                                                      	  │
+│   EXPOSE         Document port (metadata)      EXPOSE 80            	  │
+│                  (doesn't publish port)        EXPOSE 443           	  │
+│                                                                      	  │
+│   CMD            Default command to run        CMD ["python", "app.py"] │
+│                  (can be overridden)           CMD python app.py    	  │
+│                                                                      	  │
+│   ENTRYPOINT     Configure container           ENTRYPOINT ["python"]	  │
+│                  executable                    CMD ["app.py"]       	  │
+│                                                                      	  │
+│   ARG            Build-time variable           ARG VERSION=1.0      	  │
+│                  (not in final image)          RUN echo $VERSION    	  │
+│                                                                      	  │
+│   USER           Set user for RUN/CMD          USER appuser         	  │
+│                  (security best practice)                           	  │
+│                                                                      	  │
+└─────────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│                     Build Context                                    │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│   docker build -t my-app .                                          │
+│                       ▲                                             │
+│                       │                                             │
+│                   Build context (current directory)                 │
+│                                                                      │
+│   ┌─────────────────────────────────────────────────────────────┐   │
+│   │  Your Project Directory (build context)                      │   │
+│   │                                                              │   │
+│   │  ├── Dockerfile                                              │   │
+│   │  ├── app.py                                                  │   │
+│   │  ├── requirements.txt                                        │   │
+│   │  ├── src/                                                    │   │
+│   │  │   └── ...                                                │   │
+│   │  ├── tests/                                                  │   │
+│   │  │   └── ...                                                │   │
+│   │  ├── node_modules/  ❌ Don't include!                       │   │
+│   │  ├── .git/          ❌ Don't include!                       │   │
+│   │  └── .dockerignore  ✓ Excludes files from context           │   │
+│   │                                                              │   │
+│   └─────────────────────────────────────────────────────────────┘   │
+│                                                                      │
+│   The build context is sent to Docker daemon                        │
+│   Large context = slow builds                                       │
+│   Use .dockerignore to exclude unnecessary files                    │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│                    CMD vs ENTRYPOINT                                 │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│   CMD: Default command (can be overridden)                          │
+│   ─────────────────────────────────────────                         │
+│                                                                      │
+│   Dockerfile:                                                        │
+│   CMD ["python", "app.py"]                                          │
+│                                                                      │
+│   docker run my-app                  # Runs: python app.py          │
+│   docker run my-app python test.py   # Runs: python test.py         │
+│                                      # (CMD replaced)               │
+│                                                                      │
+│   ───────────────────────────────────────────────────────────────   │
+│                                                                      │
+│   ENTRYPOINT: Fixed command (arguments appended)                    │
+│   ──────────────────────────────────────────────                    │
+│                                                                      │
+│   Dockerfile:                                                        │
+│   ENTRYPOINT ["python"]                                             │
+│   CMD ["app.py"]                                                    │
+│                                                                      │
+│   docker run my-app                  # Runs: python app.py          │
+│   docker run my-app test.py          # Runs: python test.py         │
+│                                      # (CMD replaced, ENTRYPOINT stays)│
+│                                                                      │
+│   ───────────────────────────────────────────────────────────────   │
+│                                                                      │
+│   Common Patterns:                                                   │
+│                                                                      │
+│   # Web server (CMD only)                                           │
+│   CMD ["nginx", "-g", "daemon off;"]                                │
+│                                                                      │
+│   # CLI tool (ENTRYPOINT + CMD)                                     │
+│   ENTRYPOINT ["aws"]                                                │
+│   CMD ["--help"]                                                    │
+│                                                                      │
+│   # Script wrapper                                                   │
+│   ENTRYPOINT ["/entrypoint.sh"]                                     │
+│   CMD ["start"]                                                     │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│                  Shell Form vs Exec Form                             │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│   EXEC FORM (recommended)                                           │
+│   ───────────────────────                                           │
+│   CMD ["python", "app.py"]                                          │
+│   ENTRYPOINT ["python", "app.py"]                                   │
+│                                                                      │
+│   • Runs command directly (PID 1)                                   │
+│   • Receives signals properly (SIGTERM, etc.)                       │
+│   • No shell processing                                             │
+│   • Arguments as JSON array                                         │
+│                                                                      │
+│   ───────────────────────────────────────────────────────────────   │
+│                                                                      │
+│   SHELL FORM                                                         │
+│   ──────────                                                         │
+│   CMD python app.py                                                 │
+│   RUN apt-get update && apt-get install -y curl                    │
+│                                                                      │
+│   • Runs via /bin/sh -c                                            │
+│   • Shell features available (pipes, variables)                     │
+│   • Command doesn't receive signals directly                        │
+│   • Environment variable expansion                                  │
+│                                                                      │
+│   ───────────────────────────────────────────────────────────────   │
+│                                                                      │
+│   When to use each:                                                  │
+│   • CMD/ENTRYPOINT: Use exec form (signal handling)                │
+│   • RUN: Shell form often cleaner for complex commands             │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│                  Dockerfile Best Practices                          │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   1. USE SPECIFIC BASE IMAGES                                       │
+│      ❌ FROM python                                                 │
+│      ❌ FROM python:latest                                          │
+│      ✅ FROM python:3.11-slim-bookworm                              │
+│                                                                     │
+│   2. ORDER INSTRUCTIONS BY CHANGE FREQUENCY                         │
+│      Least changing → Most changing (for cache)                     │
+│                                                                     │
+│      FROM python:3.11                                               │
+│      WORKDIR /app                                                   │
+│      COPY requirements.txt .           # Changes less often         │
+│      RUN pip install -r requirements.txt                            │
+│      COPY . .                          # Changes frequently         │
+│                                                                     │
+│   3. MINIMIZE LAYERS                                                │
+│      ❌ RUN apt-get update                                          │
+│         RUN apt-get install -y curl                                 │
+│         RUN apt-get install -y wget                                 │
+│                                                                     │
+│      ✅ RUN apt-get update && \                                     │
+│            apt-get install -y --no-install-recommends \             │
+│            curl wget && \                                           │
+│            rm -rf /var/lib/apt/lists/*                              │
+│                                                                     │
+│   4. DON'T RUN AS ROOT                                              │
+│      RUN adduser --disabled-password appuser                        │
+│      USER appuser                                                   │
+│                                                                     │
+│   5. USE .dockerignore                                              │
+│      Exclude .git, node_modules, __pycache__, etc.                  │
+│                                                                     │
+│   6. USE COPY INSTEAD OF ADD                                        │
+│      (Unless you need ADD's special features)                       │
+│                                                                     │
+│   7. SET APPROPRIATE DEFAULTS                                       │
+│      ENV, WORKDIR, EXPOSE, USER                                     │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+
+docker build -t my-python-app .
+	. => the current working directory (in terminal)
+		Docker will try to build using a matching Dockerfile within the working directory specified
+		Docker will use the first Dockerfile it finds
+		Specify the appropriate working directory accordingly
+
+CODE EXAMPLES
+(Refer to study guide for details)
+# We ran through them during in-class demo
+# Week 10 Wednesday Exercises -> we basically did the first three already by this point
 ===================================================================================================

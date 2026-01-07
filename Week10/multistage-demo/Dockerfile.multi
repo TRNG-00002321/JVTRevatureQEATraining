@@ -1,0 +1,55 @@
+# ============================================
+# Stage 1: Build Stage
+# ============================================
+FROM python:3.11 AS build
+
+WORKDIR /app
+
+# Install build dependencies (only in build stage)
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    gcc \
+    python3-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create virtual environment
+RUN python -m venv /opt/venv
+
+# Activate venv by adding to PATH
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Install Python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# ============================================
+# Stage 2: Runtime Stage
+# ============================================
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Copy virtual environment from build stage
+COPY --from=build /opt/venv /opt/venv
+
+# Activate venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Create non-root user for security
+RUN useradd --create-home --shell /bin/bash appuser
+
+# Copy application code
+COPY --chown=appuser:appuser app.py .
+
+# Switch to non-root user
+USER appuser
+
+# Environment variables
+ENV APP_VERSION=2.0.0
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+EXPOSE 5000
+
+# Use gunicorn for production
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "2", "app:app"]

@@ -1,0 +1,21 @@
+# Stage 1: Dependencies
+FROM python:3.11 AS deps
+WORKDIR /app
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Stage 2: Test (optional)
+FROM deps AS test
+COPY . .
+# RUN pytest tests/  # Would run tests here
+
+# Stage 3: Production
+FROM python:3.11-slim AS production
+COPY --from=deps /opt/venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+WORKDIR /app
+COPY app.py .
+USER nobody
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]

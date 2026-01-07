@@ -1,0 +1,1026 @@
+Jeremiah Trinh
+01/07/2026
+QEA Training - Day 44
+
+# Do not expect any mock interviews to be scheduled over the weekend anymore
+# QC tomorrow! -> prepare accordingly
+
+docker-images.md
+===================================================================================================
+A Docker Image is a read-only template containing everything needed to run an application: code, runtime, libraries, environment variables, and configuration files. 
+When you run an image, Docker creates a container--a running instance of that image.
+┌─────────────────────────────────────────────────────────────────────┐
+│                    Docker Image Concept                             │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   IMAGE = Template (read-only)                                      │
+│                                                                     │
+│   ┌─────────────────────────────────────────────────────────────┐   │
+│   │  Docker Image: python:3.11                                  │   │
+│   │                                                             │   │
+│   │  Contains:                                                  │   │
+│   │  ├── Base operating system (Debian slim)                    │   │
+│   │  ├── Python 3.11 interpreter                                │   │
+│   │  ├── pip package manager                                    │   │
+│   │  ├── Standard library                                       │   │
+│   │  └── Environment configuration                              │   │
+│   │                                                             │   │
+│   └─────────────────────────────────────────────────────────────┘   │
+│                    │                                                │
+│                    │ docker run                                     │
+│                    ▼                                                │
+│   ┌─────────────────────────────────────────────────────────────┐   │
+│   │  Container 1        Container 2        Container 3          │   │
+│   │  (running)          (running)          (running)            │   │
+│   │                                                             │   │
+│   │  Each container is an isolated instance                     │   │
+│   │  All from the same image template                           │   │
+│   └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+
+Images are composed of layers--each layer represents a filesystem change. Layers are:
+- Read-only: once created, never modified
+- Shared: Multiple images can share common layers
+- Cached: Unchanged layers don't need rebuilding
+┌─────────────────────────────────────────────────────────────────────┐
+│                     Image Layer Structure                           │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   FROM python:3.11-slim                                             │
+│   COPY requirements.txt .                                           │
+│   RUN pip install -r requirements.txt                               │
+│   COPY . /app                                                       │
+│   CMD ["python", "/app/main.py"]                                    │
+│                                                                     │
+│                    ▼                                                │
+│                                                                     │
+│   ┌─────────────────────────────────────────────────────────────┐   │
+│   │  Layer 5: CMD instruction            (metadata only, 0 KB)  │   │
+│   ├─────────────────────────────────────────────────────────────┤   │
+│   │  Layer 4: COPY . /app                (your application)     │   │
+│   ├─────────────────────────────────────────────────────────────┤   │
+│   │  Layer 3: pip install                (installed packages)   │   │
+│   ├─────────────────────────────────────────────────────────────┤   │
+│   │  Layer 2: COPY requirements.txt      (single file)          │   │
+│   ├─────────────────────────────────────────────────────────────┤   │
+│   │  Layer 1: python:3.11-slim           (base image layers)    │   │
+│   └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│   Benefits of layers:                                               │
+│   + Efficient storage (shared between images)                       │
+│   + Fast builds (cached layers not rebuilt)                         │
+│   + Efficient distribution (only changed layers transferred)        │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│                  Image Naming Convention                            │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   Full image reference:                                             │
+│   [REGISTRY/][NAMESPACE/]REPOSITORY[:TAG][@DIGEST]                  │
+│                                                                     │
+│   Examples:                                                         │
+│   ─────────                                                         │
+│                                                                     │
+│   nginx                                                             │
+│   └── library/nginx:latest from docker.io                           │
+│                                                                     │
+│   nginx:1.25                                                        │
+│   └── library/nginx:1.25 from docker.io                             │
+│                                                                     │
+│   mycompany/myapp:v2.0                                              │
+│   └── mycompany namespace, myapp repo, v2.0 tag                     │
+│                                                                     │
+│   gcr.io/project/image:tag                                          │
+│   └── Google Container Registry                                     │
+│                                                                     │
+│   123456789.dkr.ecr.us-east-1.amazonaws.com/myapp:latest            │
+│   └── AWS Elastic Container Registry                                │
+│                                                                     │
+│   ───────────────────────────────────────────────────────────────   │
+│                                                                     │
+│   Tag Best Practices:                                               │
+│   ─────────────────                                                 │
+│   • Avoid :latest in production (not immutable)                     │
+│   • Use semantic versioning: v1.2.3                                 │
+│   • Use git SHA for traceability: abc123                            │
+│   • Use date stamps: 2024-01-15                                     │
+│   • Combine approaches: v1.2.3-abc123                               │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+# Namespace is usually the name of your company.
+# Repository does not refer to the git repo, rather it refers to the name of the image.
+
+┌─────────────────────────────────────────────────────────────────────┐
+│                    Docker Registries                                │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   DOCKER HUB (docker.io) - Default public registry                  │
+│   ─────────────────────────────────────────────────                 │
+│   ┌─────────────────────────────────────────────────────────────┐   │
+│   │  Official Images           Verified Publisher               │   │
+│   │  ────────────────          ──────────────────               │   │
+│   │  • Maintained by Docker    • Company-maintained             │   │
+│   │  • "library" namespace     • Verified organization          │   │
+│   │  • Examples:               • Examples:                      │   │
+│   │    nginx, python,            bitnami/postgresql,            │   │
+│   │    postgres, redis           hashicorp/terraform            │   │
+│   │                                                             │   │
+│   │  Community Images                                           │   │
+│   │  ────────────────                                           │   │
+│   │  • User-uploaded                                            │   │
+│   │  • Varying quality                                          │   │
+│   │  • Format: username/imagename                               │   │
+│   └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│   PRIVATE REGISTRIES                                                │
+│   ──────────────────                                                │
+│   • AWS ECR (Elastic Container Registry)                            │
+│   • Google GCR (Google Container Registry)                          │
+│   • Azure ACR (Azure Container Registry)                            │
+│   • GitHub Container Registry (ghcr.io)                             │
+│   • Self-hosted: Harbor, GitLab Registry                            │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│                    Understanding Image Tags                         │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   Example: python image tags                                        │
+│   ──────────────────────────                                        │
+│                                                                     │
+│   python:3.11          ─▶ Full Python 3.11 (Debian-based)          │
+│   python:3.11-slim     ─▶ Minimal Python 3.11 (~150MB smaller)     │
+│   python:3.11-alpine   ─▶ Alpine Linux base (~100MB)               │
+│   python:3.11-bullseye ─▶ Debian Bullseye base                     │
+│   python:3.11.7        ─▶ Specific patch version                   │
+│   python:latest        ─▶ Latest stable (currently 3.12)           │
+│                                                                     │
+│   ───────────────────────────────────────────────────────────────   │
+│                                                                     │
+│   Tag Patterns:                                                     │
+│   ─────────────                                                     │
+│                                                                     │
+│   VERSION TAGS                                                      │
+│   3.11, 3.11.7, 3.11.7-slim                                         │
+│   More specific = more predictable                                  │
+│                                                                     │
+│   VARIANT TAGS                                                      │
+│   -slim     Smaller image (fewer packages)                          │
+│   -alpine   Alpine Linux base (smallest, musl libc)                 │
+│   -bullseye Debian Bullseye                                         │
+│   -bookworm Debian Bookworm                                         │
+│                                                                     │
+│   SPECIAL TAGS                                                      │
+│   latest    Default tag (changes over time)                         │
+│   stable    Stable release                                          │
+│   edge      Latest development                                      │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+
+CODE EXAMPLES
+**Pulling Images**
+# Pull image from Docker Hub
+docker pull nginx
+
+# Pull specific version, defaults to default tag if tag/version not specified (usually, default tag/version is latest)
+docker pull nginx:1.25
+
+# Pull with full reference
+docker pull docker.io/library/nginx:1.25
+
+# Pull from different registry
+docker pull gcr.io/google-containers/busybox:1.27
+
+# Pull by digest (immutable, exact image)
+docker pull nginx@sha256:abc123...
+
+# Pull all tags for an image (rare, large download)
+# docker pull --all-tags nginx
+
+# See pull progress
+docker pull python:3.11
+# Shows each layer being downloaded
+
+**Listing and Inspecting Images**
+# List all images
+docker images
+docker image ls
+
+# List with size information
+docker images --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}"
+
+# List only image IDs
+docker images -q
+
+# Filter images
+docker images nginx
+docker images --filter "dangling=true"    # Untagged images
+docker images --filter "before=nginx:1.25"
+
+# Show image history (layers)
+docker history nginx:1.25
+docker history --no-trunc nginx:1.25  # Full commands
+
+# Detailed inspection
+docker inspect nginx:1.25
+
+# Get specific information
+docker inspect nginx:1.25 --format '{{.Config.ExposedPorts}}'
+docker inspect nginx:1.25 --format '{{.Config.Env}}'
+docker inspect nginx:1.25 --format '{{.RepoTags}}'
+docker inspect nginx:1.25 --format '{{.Size}}'
+
+**Image Tagging**
+# Tag an existing image
+docker tag nginx:1.25 my-nginx:v1
+
+# Tag for private registry
+docker tag nginx:1.25 myregistry.com/nginx:1.25
+
+# Tag for AWS ECR
+docker tag my-app:latest 123456789.dkr.ecr.us-east-1.amazonaws.com/my-app:latest
+
+# Multiple tags for same image
+docker tag my-app:latest my-app:v1.0.0
+docker tag my-app:latest my-app:production
+
+# Verify tags
+docker images my-app
+# Shows same IMAGE ID with different tags
+
+**Removing Images**
+# Remove image by name
+docker rmi nginx:1.25
+
+# Remove image by ID
+docker rmi abc123def456
+
+# Force remove (even if containers exist)
+docker rmi -f nginx:1.25
+
+# Remove multiple images
+docker rmi nginx:1.25 nginx:1.24 nginx:1.23
+
+# Remove dangling images (untagged)
+docker image prune
+
+# Remove all unused images
+docker image prune -a
+
+# Remove images matching filter
+docker images --filter "dangling=true" -q | xargs docker rmi
+
+# Remove all images (careful!)
+docker rmi $(docker images -q)
+
+**Docker Hub Operations**
+# Search Docker Hub
+docker search nginx
+docker search --filter "is-official=true" postgres
+docker search --limit 5 python
+
+# Login to Docker Hub
+docker login
+# Enter username and password
+
+# Login to other registry
+docker login myregistry.com
+docker login 123456789.dkr.ecr.us-east-1.amazonaws.com
+
+# Push image to registry
+docker push myusername/my-app:v1.0
+docker push myregistry.com/my-app:v1.0
+
+# Logout
+docker logout
+docker logout myregistry.com
+
+**Examining Image Contents**
+# View image layers
+docker history python:3.11
+
+# See each layer with full commands
+docker history --no-trunc python:3.11
+
+# Inspect image configuration
+docker inspect python:3.11
+
+# Extract specific info
+docker inspect python:3.11 --format '{{.Config.Cmd}}'
+docker inspect python:3.11 --format '{{json .Config.Env}}'
+
+# Export image to tar file
+docker save nginx:1.25 -o nginx-1.25.tar
+
+# Import image from tar file
+docker load -i nginx-1.25.tar
+
+# View image filesystem (create temp container)
+docker run --rm -it nginx:1.25 ls -la /
+docker run --rm -it python:3.11 pip list
+
+# Extract file from image
+docker run --rm nginx:1.25 cat /etc/nginx/nginx.conf > nginx.conf.local
+
+**Working With Digests**
+# Get image digest
+docker images --digests nginx
+
+# Pull by digest (immutable reference)
+docker pull nginx@sha256:4c0fdaa8b6341bfdeca5f18f7837462c80cbc15b153e8d5c6c9f08a5b9cfe7a2
+
+# Reference in Dockerfile (for reproducibility)
+# FROM nginx@sha256:4c0fdaa8b6341bfdeca5f18f7837462c80cbc15b153e8d5c6c9f08a5b9cfe7a2
+
+# Why use digests?
+# - Tags can be overwritten
+# - Digest is content-addressable (changes if content changes)
+# - Guarantees exact same image every time
+
+**Image Comparison And Analysis**
+# Compare image sizes
+docker images --format "{{.Repository}}:{{.Tag}} {{.Size}}" | sort -k2 -h
+
+# Find large images
+docker images --format "{{.Repository}}:{{.Tag}}\t{{.Size}}" | sort -t$'\t' -k2 -h | tail -10
+
+# Compare two images
+docker history nginx:1.25 > nginx-1.25-layers.txt
+docker history nginx:1.24 > nginx-1.24-layers.txt
+diff nginx-1.25-layers.txt nginx-1.24-layers.txt
+
+# Analyze image with dive (third-party tool)
+# Install: https://github.com/wagoodman/dive
+# dive nginx:1.25
+# Shows layer-by-layer filesystem changes
+
+# Clean up
+rm nginx-*.txt
+
+**Common Image Patterns**
+# Use slim images for smaller size
+docker pull python:3.11-slim
+# vs python:3.11 (much larger)
+
+# Use alpine for smallest size (different libc)
+docker pull python:3.11-alpine
+# Note: May have compatibility issues
+
+# Pin specific versions
+docker pull python:3.11.7-slim-bullseye
+# More reproducible than python:3.11-slim
+
+# Multi-architecture images (docker handles automatically)
+docker pull --platform linux/amd64 nginx:1.25
+docker pull --platform linux/arm64 nginx:1.25
+
+# Check available architectures
+docker manifest inspect nginx:1.25
+
+
+Misc. Notes from Demo:
+docker rm to remove a container, docker rmi to remove an image
+Cannot remove an image if a container is still associated with it
+	Must remove the container before removing the image
+# There is currently a CEO-based phishing scam going around right now; keep an eye out for it
+
+Additional Resources:
+https://hub.docker.com/ - Official image registry
+https://docs.docker.com/engine/reference/commandline/image/ - Command documentation
+https://docs.docker.com/develop/develop-images/dockerfile_best-practices/ - Official Guidelines
+===================================================================================================
+
+
+docker-containers.md
+===================================================================================================
+WHY THIS MATTERS
+*From Code to Cloud: Mastering the Modern Deployment Pipeline*
+Containers are the runtime manifestation of Docker images—they're where your applications actually execute. 
+Mastering container management is essential for development, testing, and debugging. 
+When a test environment needs a database, you spin up a container. 
+When debugging an issue, you exec into a running container. 
+When cleaning up resources, you remove containers properly.
+
+As a quality engineer, you'll manage containers constantly: 
+	running test dependencies, 
+	inspecting application behavior, 
+	and ensuring clean test environments. 
+These skills directly translate to CI/CD pipelines where containers are 
+	created, 
+	tested, 
+	and destroyed automatically.
+
+
+THE CONCEPT	
+┌─────────────────────────────────────────────────────────────────────┐
+│                    Container Lifecycle                              │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   IMAGE                                                             │
+│     │                                                               │
+│     │ docker create / docker run                                    │
+│     ▼                                                               │
+│   ┌─────────────┐                                                   │
+│   │   CREATED   │──────── docker start ────────▶ ┌─────────────┐    │
+│   └─────────────┘                                │   RUNNING   │    │
+│                                                  └──────┬──────┘    │
+│                                                         │           │
+│                              ┌───────────────────┬──────┴──────┐    │
+│                              │                   │             │    │
+│                        docker pause        docker stop    process   │
+│                              │                   │          exits   │
+│                              ▼                   ▼             │    │
+│                        ┌──────────┐       ┌──────────┐         │    │
+│                        │  PAUSED  │       │  EXITED  │◀────────┘    │
+│                        └────┬─────┘       └────┬─────┘              │
+│                             │                  │                    │
+│                     docker unpause       docker start               │
+│                             │                  │                    │
+│                             └────────┬─────────┘                    │
+│                                      ▼                              │
+│                               ┌─────────────┐                       │
+│                               │   RUNNING   │                       │
+│                               └─────────────┘                       │
+│                                                                     │
+│   From any state:                                                   │
+│   docker rm ───────────────────▶ REMOVED                            │
+│   docker rm -f (force removes running container)                    │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│              Interactive vs Detached Mode                           │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   INTERACTIVE MODE (-it)                                            │
+│   ──────────────────────                                            │
+│   docker run -it ubuntu bash                                        │
+│                                                                     │
+│   ┌─────────────────────────────────────────────────────────────┐   │
+│   │  Terminal ◄───────────────────────▶ Container               │   │
+│   │                                                             │   │
+│   │  • STDIN connected                                          │   │
+│   │  • TTY allocated                                            │   │
+│   │  • Foreground process                                       │   │
+│   │  • Container stops when you exit                            │   │
+│   │                                                             │   │
+│   │  Use for: Debugging, exploring, manual tasks                │   │
+│   └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│   DETACHED MODE (-d)                                                │
+│   ──────────────────                                                │
+│   docker run -d nginx                                               │
+│                                                                     │
+│   ┌─────────────────────────────────────────────────────────────┐   │
+│   │  Terminal                         Container                 │   │
+│   │                                   (background)              │   │
+│   │  • Returns immediately                                      │   │
+│   │  • Container runs in background                             │   │
+│   │  • View output with docker logs                             │   │
+│   │  • Container continues after terminal closes                │   │
+│   │                                                             │   │
+│   │  Use for: Servers, databases, long-running services         │   │
+│   └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│                      Port Mapping                                   │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   docker run -p HOST_PORT:CONTAINER_PORT image                      │
+│                                                                     │
+│   Example: docker run -p 8080:80 nginx                              │
+│                                                                     │
+│   ┌─────────────────────────────────────────────────────────────┐   │
+│   │                                                             │   │
+│   │   Host Machine                    Container                 │   │
+│   │   ─────────────                   ─────────                 │   │
+│   │                                                             │   │
+│   │   localhost:8080  ─────────────▶  :80                       │   │
+│   │                    Port mapping     nginx                   │   │
+│   │                                                             │   │
+│   │   Browser request to              Received by nginx         │   │
+│   │   http://localhost:8080           on port 80                │   │
+│   │                                                             │   │
+│   └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│   Port Mapping Options:                                             │
+│   ─────────────────────                                             │
+│   -p 8080:80          Map host 8080 to container 80                 │
+│   -p 127.0.0.1:8080:80  Map only localhost                          │
+│   -p 8080-8090:80-90  Map port ranges                               │
+│   -P                  Map all exposed ports to random host ports    │
+│                                                                     │
+│   Multiple Ports:                                                   │
+│   docker run -p 80:80 -p 443:443 nginx                              │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│                    Environment Variables                            │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   Pass configuration to containers without modifying images         │
+│                                                                     │
+│   Single Variable:                                                  │
+│   docker run -e MY_VAR=value image                                  │
+│                                                                     │
+│   Multiple Variables:                                               │
+│   docker run -e VAR1=value1 -e VAR2=value2 image                    │
+│                                                                     │
+│   From File (.env):                                                 │
+│   docker run --env-file .env image                                  │
+│                                                                     │
+│   ┌─────────────────────────────────────────────────────────────┐   │
+│   │  Example: Database Container                                │   │
+│   │                                                             │   │
+│   │  docker run -d \                                            │   │
+│   │    -e POSTGRES_USER=myuser \                                │   │
+│   │    -e POSTGRES_PASSWORD=secret \                            │   │
+│   │    -e POSTGRES_DB=myapp \                                   │   │
+│   │    postgres:15                                              │   │
+│   │                                                             │   │
+│   │  Container reads these variables to configure itself        │   │
+│   └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│   Common Uses:                                                      │
+│   • Database credentials                                            │
+│   • API keys and tokens                                             │
+│   • Application modes (development, production)                     │
+│   • Feature flags                                                   │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│                     Container Naming                                │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   Without --name: Docker generates random name                      │
+│   docker run nginx                                                  │
+│   # Creates: happy_fermi, zealous_tesla, etc.                       │
+│                                                                     │
+│   With --name: You control the name                                 │
+│   docker run --name my-nginx nginx                                  │
+│                                                                     │
+│   Benefits of Named Containers:                                     │
+│   ┌─────────────────────────────────────────────────────────────┐   │
+│   │  • Reference by name instead of ID                          │   │
+│   │    docker stop my-nginx                                     │   │
+│   │    docker logs my-nginx                                     │   │
+│   │                                                             │   │
+│   │  • Container networking by name                             │   │
+│   │    docker run --link my-nginx:nginx my-app                  │   │
+│   │                                                             │   │
+│   │  • Scripts and automation                                   │   │
+│   │    More readable and maintainable                           │   │
+│   │                                                             │   │
+│   │  • Docker Compose uses service names                        │   │
+│   │    Service discovery by container name                      │   │
+│   └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│   Naming Conventions:                                               │
+│   • Lowercase letters, digits, underscores, hyphens                 │
+│   • Start with letter or digit                                      │
+│   • Descriptive: web-server, api-gateway, db-postgres               │
+│   • Include environment: my-app-dev, my-app-prod                    │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│                     Resource Limits                                 │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   MEMORY LIMITS                                                     │
+│   ─────────────                                                     │
+│   -m, --memory      Hard memory limit                               │
+│   --memory-swap     Memory + swap limit                             │
+│   --memory-reservation  Soft limit                                  │
+│                                                                     │
+│   docker run -m 512m nginx        # Max 512MB                       │
+│   docker run -m 1g nginx          # Max 1GB                         │
+│                                                                     │
+│   CPU LIMITS                                                        │
+│   ──────────                                                        │
+│   --cpus            Number of CPUs                                  │
+│   --cpu-shares      Relative weight (default 1024)                  │
+│   --cpuset-cpus     Specific CPUs to use                            │
+│                                                                     │
+│   docker run --cpus 0.5 nginx     # Max 50% of one CPU              │
+│   docker run --cpus 2 nginx       # Max 2 CPUs                      │
+│                                                                     │
+│   ┌─────────────────────────────────────────────────────────────┐   │
+│   │  Example: Production-like Resource Limits                   │   │
+│   │                                                             │   │
+│   │  docker run -d \                                            │   │
+│   │    --name my-app \                                          │   │
+│   │    --memory 512m \                                          │   │
+│   │    --cpus 1 \                                               │   │
+│   │    --restart unless-stopped \                               │   │
+│   │    my-app:latest                                            │   │
+│   └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│   Why Use Resource Limits?                                          │
+│   • Prevent runaway containers from consuming all resources         │
+│   • Simulate production constraints in testing                      │
+│   • Fair resource sharing between containers                        │
+│   • Required for orchestrators (Kubernetes)                         │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│                      Docker Exec                                    │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   Execute commands inside running containers                        │
+│                                                                     │
+│   docker exec [OPTIONS] CONTAINER COMMAND                           │
+│                                                                     │
+│   Common Patterns:                                                  │
+│   ─────────────────                                                 │
+│                                                                     │
+│   # Interactive shell                                               │
+│   docker exec -it my-container bash                                 │
+│   docker exec -it my-container sh  # For alpine                     │
+│                                                                     │
+│   # Run single command                                              │
+│   docker exec my-container ls /app                                  │
+│   docker exec my-container cat /etc/hosts                           │
+│                                                                     │
+│   # Run as different user                                           │
+│   docker exec -u root my-container whoami                           │
+│                                                                     │
+│   # Set environment variable for command                            │
+│   docker exec -e DEBUG=true my-container ./script.sh                │
+│                                                                     │
+│   # Work in specific directory                                      │
+│   docker exec -w /app my-container npm test                         │
+│                                                                     │
+│   Use Cases:                                                        │
+│   • Debug running applications                                      │
+│   • Inspect filesystem                                              │
+│   • Run database commands                                           │
+│   • View logs not sent to stdout                                    │
+│   • Install debugging tools temporarily                             │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+
+CODE EXAMPLES
+**Container Lifecycle Management**
+# Run container in detached mode
+docker run -d --name web nginx
+
+# Check running containers
+docker ps
+
+# Check all containers (including stopped)
+docker ps -a
+
+# View container logs
+docker logs web
+docker logs -f web    # Follow logs
+docker logs --tail 100 web  # Last 100 lines
+
+# Stop container gracefully (SIGTERM, then SIGKILL after 10s)
+docker stop web
+
+# Start stopped container
+docker start web
+
+# Restart container
+docker restart web
+
+# Pause container (freeze processes)
+docker pause web
+docker unpause web
+
+# Stop immediately (SIGKILL)
+docker kill web
+
+# Remove stopped container
+docker rm web
+
+# Force remove running container
+docker rm -f web
+
+# Remove container when it exits
+docker run --rm alpine echo "I will be removed"
+
+**Interactive Container Sessions**
+# Start interactive bash session
+docker run -it ubuntu bash
+
+# Inside container:
+apt update
+apt install -y curl
+curl https://example.com
+exit
+
+# Start shell in running container
+docker run -d --name my-ubuntu ubuntu sleep 3600
+docker exec -it my-ubuntu bash
+# Do work, then exit
+# Container keeps running
+
+# Run command and get output
+docker exec my-ubuntu cat /etc/os-release
+
+# Interactive with pseudo-TTY (needed for some commands)
+docker exec -it my-ubuntu top
+
+# Cleanup
+docker rm -f my-ubuntu
+
+**Port Mapping Examples**
+# Map single port
+docker run -d -p 8080:80 --name web nginx
+curl http://localhost:8080
+
+# Map multiple ports
+docker run -d \
+  -p 80:80 \
+  -p 443:443 \
+  --name secure-web \
+  nginx
+
+# Map to specific interface
+docker run -d -p 127.0.0.1:3000:3000 --name local-only node-app
+
+# Random host port
+docker run -d -P --name random-ports nginx
+docker port random-ports  # See assigned ports
+
+# Map port range
+docker run -d -p 8000-8010:8000-8010 --name range my-app
+
+# Check which port is mapped
+docker port web
+# 80/tcp -> 0.0.0.0:8080
+
+# Cleanup
+docker rm -f web secure-web local-only random-ports
+
+**Environment Variables**
+# Single variable
+docker run -e MY_VAR=hello alpine env | grep MY_VAR
+
+# Multiple variables
+docker run \
+  -e DATABASE_HOST=localhost \
+  -e DATABASE_PORT=5432 \
+  -e DATABASE_NAME=myapp \
+  alpine env
+
+# From host environment
+export API_KEY=secret123
+docker run -e API_KEY alpine env | grep API_KEY
+
+# From file
+cat > .env << 'EOF'
+DATABASE_URL=postgres://localhost/myapp
+REDIS_URL=redis://localhost:6379
+DEBUG=true
+EOF
+
+docker run --env-file .env alpine env
+
+# Database example with environment variables
+docker run -d \
+  --name postgres \
+  -e POSTGRES_USER=admin \
+  -e POSTGRES_PASSWORD=secretpassword \
+  -e POSTGRES_DB=testdb \
+  -p 5432:5432 \
+  postgres:15
+
+# Connect to the database
+docker exec -it postgres psql -U admin -d testdb
+
+# Cleanup
+docker rm -f postgres
+rm .env
+
+**Resource Limits**
+# Memory limit
+docker run -d --name limited-mem -m 256m nginx
+docker stats limited-mem --no-stream
+
+# CPU limit
+docker run -d --name limited-cpu --cpus 0.5 nginx
+docker stats limited-cpu --no-stream
+
+# Combined limits
+docker run -d \
+  --name production-like \
+  --memory 512m \
+  --cpus 1 \
+  nginx
+
+# Memory stress test (container will be OOM killed)
+docker run --rm -m 64m alpine sh -c \
+  'dd if=/dev/zero of=/dev/null bs=100M count=1' 2>&1 || echo "OOM killed as expected"
+
+# View container resource usage
+docker stats --no-stream
+
+# Inspect resource limits
+docker inspect limited-mem --format '{{.HostConfig.Memory}}'
+
+# Cleanup
+docker rm -f limited-mem limited-cpu production-like
+
+**Container Inspection and Debugging**
+# Full container details
+docker inspect my-container
+
+# Specific information
+docker inspect my-container --format '{{.State.Status}}'
+docker inspect my-container --format '{{.NetworkSettings.IPAddress}}'
+docker inspect my-container --format '{{json .Config.Env}}'
+
+# View real-time resource usage
+docker stats
+
+# View container processes
+docker top my-container
+
+# View port mappings
+docker port my-container
+
+# Copy files from container
+docker cp my-container:/var/log/app.log ./app.log
+
+# Copy files to container
+docker cp ./config.json my-container:/app/config.json
+
+# View container filesystem changes
+docker diff my-container
+# A = Added, C = Changed, D = Deleted
+
+# Export container filesystem
+docker export my-container > container-backup.tar
+
+# Create image from container (with changes)
+docker commit my-container my-new-image:v1
+
+**Common Container Patterns**
+# One-off command (run and remove)
+docker run --rm alpine echo "Task completed"
+
+# Run database for development
+docker run -d \
+  --name dev-postgres \
+  -e POSTGRES_PASSWORD=devpass \
+  -p 5432:5432 \
+  -v postgres-data:/var/lib/postgresql/data \
+  postgres:15
+
+# Run Redis cache
+docker run -d \
+  --name dev-redis \
+  -p 6379:6379 \
+  redis:7
+
+# Run tests in container
+docker run --rm \
+  -v $(pwd):/app \
+  -w /app \
+  python:3.11 \
+  python -m pytest tests/
+
+# Run linter
+docker run --rm \
+  -v $(pwd):/app \
+  -w /app \
+  node:18 \
+  npx eslint src/
+
+# Debug a build
+docker run -it --rm \
+  -v $(pwd):/app \
+  -w /app \
+  python:3.11 \
+  bash
+
+# Cleanup development containers
+docker rm -f dev-postgres dev-redis
+docker volume rm postgres-data
+===================================================================================================
+
+
+docker-volumes.md
+===================================================================================================
+WHY THIS MATTERS
+Containers are ephemeral by design--when a container is removed, its filesystem is deleted.
+However, real applications need persistent data: 
+	databases store records, 
+	applications save user uploads, 
+	and logs must survive container restarts. 
+Docker volumes solve this by providing persistent storage outside the container lifecycle.
+
+As a quality engineer, understanding volumes is essential for 
+	managing test data, 
+	setting up databases for integration tests, 
+	and ensuring data persists across container restarts in test environments. 
+When CI/CD pipelines run database tests, volumes ensure test fixtures are available.
+
+THE CONCEPT
+The Data Persistance Problem:
+┌─────────────────────────────────────────────────────────────────────┐
+│                  Container Data Problem                             │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   WITHOUT VOLUMES                                                   │
+│   ───────────────                                                   │
+│                                                                     │
+│   Day 1: Create container, data is written                          │
+│   ┌─────────────────────────────────────────────────────────────┐   │
+│   │  Container: postgres                                        │   │
+│   │  ┌─────────────────────────────────────────────────────┐    │   │
+│   │  │  Container Filesystem                               │    │   │
+│   │  │  /var/lib/postgresql/data                           │    │   │
+│   │  │  └── Database files: 500MB                          │    │   │
+│   │  └─────────────────────────────────────────────────────┘    │   │
+│   └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│   Day 2: Container removed                                          │
+│   ┌─────────────────────────────────────────────────────────────┐   │
+│   │                                                             │   │
+│   │             ❌ ALL DATA LOST ❌                            │    │
+│   │                                                             │   │
+│   └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│   ───────────────────────────────────────────────────────────────   │
+│                                                                     │
+│   WITH VOLUMES                                                      │
+│   ────────────                                                      │
+│                                                                     │
+│   Day 1: Container with volume mount                                │
+│   ┌─────────────────────────────────────────────────────────────┐   │
+│   │  Container: postgres          Volume: postgres-data         │   │
+│   │  ┌───────────────────────┐   ┌───────────────────────┐      │   │
+│   │  │  /var/lib/postgresql  │───│  Persistent storage   │      │   │
+│   │  │  /data (mount point)  │   │  on host              │      │   │
+│   │  └───────────────────────┘   └───────────────────────┘      │   │
+│   └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│   Day 2: Container removed, new container created                   │
+│   ┌─────────────────────────────────────────────────────────────┐   │
+│   │  New Container             Same Volume: postgres-data       │   │
+│   │  ┌───────────────────────┐   ┌───────────────────────┐      │   │
+│   │  │  /var/lib/postgresql  │───│  ✅ Data preserved    │      │   │
+│   │  │  /data                │   │  All 500MB intact     │      │   │
+│   │  └───────────────────────┘   └───────────────────────┘      │   │
+│   └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+**Creating and Using Volumes**
+# Create a named volume
+docker volume create my-data
+
+# List volumes
+docker volume ls
+
+# Inspect volume
+docker volume inspect my-data
+
+# Run container with volume
+docker run -d \
+  --name postgres-db \
+  -v my-data:/var/lib/postgresql/data \
+  -e POSTGRES_PASSWORD=secret \
+  postgres:15
+
+# Volume persists after container removal
+docker rm -f postgres-db
+
+# New container can use same volume
+docker run -d \
+  --name postgres-db-new \
+  -v my-data:/var/lib/postgresql/data \
+  -e POSTGRES_PASSWORD=secret \
+  postgres:15
+
+
+(Refer to study guide for more visuals and code examples)
+===================================================================================================
+
+
+dockerfiles.md
+===================================================================================================
+WHY THIS MATTERS
+*From Code to Cloud: Mastering the Modern Deployment Pipeline*
+Dockerfiles are "infrastructure as code" for your application environment. 
+They define exactly how to build a container image—
+	what base system to use, 
+	what software to install, 
+	what files to include, 
+	and how to run the application. 
+A well-written Dockerfile means faster builds, smaller images, and more secure containers.
+
+As a quality engineer, you'll read Dockerfiles to 
+	understand test environments, 
+	write Dockerfiles for test applications, 
+	and review Dockerfiles for CI/CD pipelines. 
+Understanding Dockerfiles helps you troubleshoot build failures 
+and optimize build times in Jenkins pipelines.
+# Jenkins will be covered later -> Friday, 01/09/2026
+
+THE CONCEPT
+===================================================================================================

@@ -2,10 +2,1101 @@
 QEA Training - Day 45
 
 # QC was today; class avg was 4.05; I got a 4
-# Client interview -> 01/15/2026 - Thursday
+# Client interview -> 01/15/2026 - Thursday -> Start preparing!!!
 # Mock interview schedule posted on MS Teams
 	# Mock interview times (on MS Teams) are in Eastern time.
 # My mock interview slot: Monday - 01/12/2026 - 11:00 (CT - Central Time)
 	# Will receive an MS Teams link for mock interview, can do from home then come into office afterwards
 # Client interview shall be at the office, in-person; dress business professional!
+# Confirmed: MLK Day (Monday - 01/19/2026) is a Revature holiday
 
+Multi-stage building Dockerfiles for Java applications
+JDK -> compile
+JRE -> execute
+
+FROM JDK
+	work dir
+	copy
+	mvn package
+FROM JRE
+	cmd ["java", "-jar", "target/app.jar"]
+
+# Keep in mind that we should utilize a multi-stage dockerfile for P2 
+	# It's just good practice in general
+# By default, our P1/P2 dockerfile builds only an employee app 
+	-> need to modify it to build an employee and a manager app
+	
+multi-stage-dockerfiles.md
+===================================================================================================
+WHY THIS MATTERS
+*From Code to Cloud: Mastering the Modern Deployment Pipeline*
+Traditional Docker builds often produce bloated images containing 
+	compilers, 
+	build tools, 
+	and development dependencies that aren't needed at runtime. 
+Multi-stage builds solve this by using separate stages—
+	one for building, 
+	one for running—producing final images that are 
+		smaller, faster to deploy, and more secure.
+
+As a quality engineer, understanding multi-stage builds helps you 
+	optimize CI/CD pipeline performance (smaller images = faster pushes and pulls), 
+	reduce attack surface in production, 
+	and troubleshoot build issues when stages fail. 
+When Jenkins builds containers, multi-stage Dockerfiles are the standard approach.
+
+┌─────────────────────────────────────────────────────────────────────┐
+│                 The Problem With Single-Stage Builds                │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   SINGLE-STAGE BUILD                                                │
+│   ──────────────────                                                │
+│                                                                     │
+│   FROM maven:3.9-eclipse-temurin-17                                 │
+│   WORKDIR /app                                                      │
+│   COPY . .                                                          │
+│   RUN mvn package                                                   │
+│   CMD ["java", "-jar", "target/app.jar"]                            │
+│                                                                     │
+│                    ▼                                                │
+│                                                                     │
+│   ┌─────────────────────────────────────────────────────────────┐   │
+│   │  Final Image: 800+ MB                                       │   │
+│   │                                                             │   │
+│   │  Contains:                                                  │   │
+│   │  ├── Maven (not needed at runtime)         ~300 MB          │   │
+│   │  ├── JDK (JRE would suffice)               ~200 MB          │   │
+│   │  ├── Source code (not needed at runtime)   ~10 MB           │   │
+│   │  ├── Downloaded dependencies               ~200 MB          │   │
+│   │  └── Final JAR (what we actually need)     ~20 MB           │   │
+│   │                                                             │   │
+│   │  ❌ Too large for production                                │   │
+│   │  ❌ Includes build tools (security risk)                    │   │
+│   │  ❌ Slow to push/pull                                       │   │
+│   └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│                  Multi-Stage Build Solution                          │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│   # Stage 1: BUILD                                                  │
+│   FROM maven:3.9-eclipse-temurin-17 AS build                        │
+│   WORKDIR /app                                                       │
+│   COPY . .                                                           │
+│   RUN mvn package -DskipTests                                       │
+│                                                                      │
+│   # Stage 2: RUNTIME                                                │
+│   FROM eclipse-temurin:17-jre-alpine                                │
+│   COPY --from=build /app/target/app.jar /app.jar                    │
+│   CMD ["java", "-jar", "/app.jar"]                                  │
+│                                                                      │
+│                    ▼                                                 │
+│                                                                      │
+│   ┌─────────────────────────────────────────────────────────────┐   │
+│   │  Build Stage (discarded)    │  Final Image: ~150 MB        │   │
+│   │  ─────────────────────────  │  ──────────────────────      │   │
+│   │  • Maven                    │  • JRE Alpine only            │   │
+│   │  • JDK                      │  • Final JAR                  │   │
+│   │  • Source code              │                               │   │
+│   │  • Dependencies             │  ✅ 5x smaller                │   │
+│   │                             │  ✅ No build tools            │   │
+│   │                             │  ✅ Minimal attack surface    │   │
+│   │         ❌ DISCARDED        │  ✅ Fast deployment           │   │
+│   └─────────────────────────────┴───────────────────────────────┘   │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│                  Multi-Stage Build Process                           │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│   Dockerfile                                                         │
+│   ──────────                                                         │
+│                                                                      │
+│   FROM node:18 AS build          ◄─── Stage 1: "build"              │
+│   WORKDIR /app                                                       │
+│   COPY package*.json ./                                             │
+│   RUN npm ci                                                        │
+│   COPY . .                                                           │
+│   RUN npm run build                                                 │
+│                                                                      │
+│   FROM node:18-alpine AS test    ◄─── Stage 2: "test"               │
+│   WORKDIR /app                                                       │
+│   COPY --from=build /app .                                          │
+│   RUN npm test                                                      │
+│                                                                      │
+│   FROM nginx:alpine              ◄─── Stage 3: Final (no name)      │
+│   COPY --from=build /app/dist /usr/share/nginx/html                │
+│                                                                      │
+│   ───────────────────────────────────────────────────────────────   │
+│                                                                      │
+│   Key Concepts:                                                      │
+│                                                                      │
+│   • AS name       Names a stage for reference                       │
+│   • COPY --from   Copies from named stage                           │
+│   • Only final    Final FROM creates the output image               │
+│     stage kept    All others are build-time only                    │
+│   • Each FROM     Starts with fresh filesystem                      │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│                     Builder Pattern                                  │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│   Compiled Languages (Go, Java, Rust, C++)                          │
+│                                                                      │
+│   ┌─────────────────────────────────────────────────────────────┐   │
+│   │  Build Stage                  Runtime Stage                  │   │
+│   │  ───────────                  ─────────────                  │   │
+│   │                                                              │   │
+│   │  • Full SDK/compiler          • Minimal runtime             │   │
+│   │  • Source code                • Binary only                 │   │
+│   │  • Build tools                • No source                   │   │
+│   │  • Dependencies               • No compiler                 │   │
+│   │                                                              │   │
+│   │  ┌──────────────┐            ┌──────────────┐              │   │
+│   │  │   Source     │            │   Binary     │              │   │
+│   │  │   Code       │──compile──▶│   Only       │              │   │
+│   │  │   + SDK      │            │              │              │   │
+│   │  │   800 MB     │            │   50 MB      │              │   │
+│   │  └──────────────┘            └──────────────┘              │   │
+│   │                                                              │   │
+│   └─────────────────────────────────────────────────────────────┘   │
+│                                                                      │
+│   Interpreted Languages (Python, Node.js, Ruby)                     │
+│                                                                      │
+│   ┌─────────────────────────────────────────────────────────────┐   │
+│   │  Build Stage                  Runtime Stage                  │   │
+│   │  ───────────                  ─────────────                  │   │
+│   │                                                              │   │
+│   │  • Build tools (gcc, make)    • Runtime only               │   │
+│   │  • Dev dependencies           • Production deps             │   │
+│   │  • Test files                 • App code only               │   │
+│   │                                                              │   │
+│   │  npm ci (all deps)            npm ci --production           │   │
+│   │  pip install (dev)            pip install (prod)            │   │
+│   │                                                              │   │
+│   └─────────────────────────────────────────────────────────────┘   │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
+# But what about running multiple containers at the same time with a single file?
+	-> This is often the case in IRL industry circumstances.
+# Docker Compose is a way of maintaining/ running multiple containers.
+	-> This is done with a .yml file.
+	-> docker-compose.yml
+	-> .yml is a modern day .properties file
+		-> Instead of key-value pairs, brackets, and braces, .yml uses tags and indentation
+		-> More hierarchical, easier to read
+		-> Modern projects are moving away from .properties in favor of .yml
+===================================================================================================
+
+
+docker-compose.md
+===================================================================================================
+WHY THIS MATTERS
+*Connecting to the Weekly Epic: "From Code to Cloud: Mastering the Modern Deployment Pipeline"*
+In the previous topics, you learned how to containerize individual applications using Docker. 
+But real-world applications rarely exist in isolation—a typical web application might need 
+a web server, a database, a cache layer, and perhaps a message queue. 
+Managing each container separately with individual docker run commands quickly becomes tedious and error-prone.
+
+Docker Compose solves this problem by allowing you to define and run multi-container Docker applications 
+using a single configuration file. 
+Instead of memorizing complex docker run commands with port mappings, volumes, and environment variables, 
+you declare everything in a YAML file and launch your entire stack with one command: docker compose up.
+
+This is exactly what DevOps teams use to:
+- Create consistent local development environments that mirror production
+- Simplify onboarding—new developers run one command to start everything
+- Define infrastructure as code for reproducible deployments
+
+
+Docker Compose is a tool for defining and running multi-container Docker applications. 
+It uses a YAML file (typically named docker-compose.yml) to configure your application's 
+services, networks, and volumes. 
+With a single command, you create and start all the services defined in your configuration.
+Key Components:
+| Component 		| 							Description 									|
+| Services 			| 	Containers that make up your application (web, database, cache, etc.) 	|
+| Networks 			| 	Custom networks for container communication 							|
+| Volumes 			| 	Persistent storage shared between containers or host 					|
+| Configs/Secrets	|	Configuration files and sensitive data management 						|
+
+The docker-compose.yml file structure:
+version: '3.8'  # Compose file format version
+
+services:
+  # Define each container as a service
+  web:
+    image: nginx:latest
+    ports:
+      - "8080:80"
+    depends_on:
+      - api
+  
+  api:
+    build: ./app  # Build from a Dockerfile
+    environment:
+      - DATABASE_URL=postgres://db:5432/myapp
+    volumes:
+      - ./app:/code
+    depends_on:
+      - db
+  
+  db:
+    image: postgres:15
+    environment:
+      - POSTGRES_PASSWORD=secret
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+volumes:
+  db-data:  # Named volume for database persistence
+
+
+Essential Docker Compose Commands:
+	Command							|	Description
+docker compose up					|	Create and start all services
+docker compose up -d				|	Start in detached (background) mode
+docker compose down					|	Stop and remove containers, networks
+docker compose ps					|	List running services
+docker compose logs					|	View output from services
+docker compose logs -f [service]	|	Follow logs for a specific service
+docker compose build				|	Build or rebuild services
+docker compose exec [service] [cmd]	|	Execute a command in a running container
+docker compose stop					|	Stop services without removing them
+docker compose restart				|	Restart services
+
+
+# K8S => Kubernetes
+# I18N => Internationalization
+# Look into these; current industry knowledge
+
+
+Service Configuration Options
+Building Images
+services:
+  app:
+    build:
+      context: ./app           # Build context directory
+      dockerfile: Dockerfile   # Dockerfile name (if not default)
+      args:
+        - BUILD_ENV=production # Build-time arguments
+		
+		
+Port Mapping
+services:
+  web:
+    ports:
+      - "3000:3000"      # HOST:CONTAINER
+      - "9229:9229"      # Debug port
+	  
+	  
+Environment Variables
+services:
+  api:
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=database
+    env_file:
+      - .env             # Load from a file
+	  
+	  
+Volumes and Bind Mounts
+services:
+  app:
+    volumes:
+      - ./src:/app/src          # Bind mount for development
+      - node_modules:/app/node_modules  # Named volume
+      
+volumes:
+  node_modules:
+  
+  
+Dependencies and Startup Order
+services:
+  api:
+    depends_on:
+      - db
+      - redis
+    # Note: depends_on only waits for containers to start,
+    # not for services inside to be ready
+	
+	
+Health Checks
+services:
+  db:
+    image: postgres:15
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      
+  api:
+    depends_on:
+      db:
+        condition: service_healthy
+		
+		
+Networking in Compose
+Docker Compose automatically creates a default network for your application. 
+All services can reach each other by their service name.
+
+services:
+  web:
+    # Can reach api at http://api:3000
+    
+  api:
+    # Can reach db at postgres://db:5432
+    
+  db:
+    # Service name becomes the hostname
+	
+	
+For more complex setups, define custom networks:
+
+services:
+  frontend:
+    networks:
+      - frontend-network
+      
+  api:
+    networks:
+      - frontend-network
+      - backend-network
+      
+  db:
+    networks:
+      - backend-network
+
+networks:
+  frontend-network:
+  backend-network:
+
+
+Development vs Production Considerations
+Docker Compose is primarily designed for local development and testing. 
+For production deployments, you'll typically use:
+	- Docker Swarm (Docker's native orchestration)
+	- Kubernetes (industry-standard container orchestration)
+	- AWS ECS/EKS (managed container services)
+However, Docker Compose files can be a starting point for 
+production configurations, and the skills you learn here 
+translate directly to these production tools.
+
+Override Files for Different Environments
+# Base configuration
+docker-compose.yml
+
+# Development overrides
+docker-compose.override.yml    # Applied automatically
+
+# Production overrides  
+docker-compose.prod.yml        # Applied with -f flag
+# Development (uses override automatically)
+docker compose up
+
+# Production
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+===================================================================================================
+
+
+devops-introduction.md
+===================================================================================================
+┌─────────────────────────────────────────────────────────────────────┐
+│                 Traditional IT: The Wall of Confusion               │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   DEVELOPMENT                  THE WALL            OPERATIONS       │
+│   ───────────                  ────────            ──────────       │
+│                                                                     │
+│   ┌─────────────┐          ░░░░░░░░░          ┌─────────────┐       │
+│   │ "It works   │          ░░░░░░░░░          │ "Not my     │       │
+│   │  on my      │  ────▶   ░░░░░░░░░   ────▶ │  problem,   │       │
+│   │  machine!"  │          ░░░░░░░░░          │  it's your  │       │
+│   │             │          ░░░░░░░░░          │  code!"     │       │
+│   │ Goals:      │          ░░░░░░░░░          │             │       │
+│   │ • Speed     │          ░░░░░░░░░          │ Goals:      │       │
+│   │ • Features  │          ░░░░░░░░░          │ • Stability │       │
+│   │ • Change    │          ░░░░░░░░░          │ • Security  │       │
+│   └─────────────┘          ░░░░░░░░░          │ • No change │       │
+│                            ░░░░░░░░░          └─────────────┘       │
+│                                                                     │
+│   Problems:                                                         │
+│   • Finger-pointing when things break                               │
+│   • Slow handoffs between teams                                     │
+│   • Inconsistent environments (dev vs prod)                         │
+│   • Long deployment cycles                                          │
+│   • Fear of deployments                                             │
+│   • Quality issues discovered late                                  │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+# Admitedly, automating software production has come very late into the process.
+	-> in terms of standard industry practices 
+# Integrating the entirety of software production into a single process.
+	-> Result: pipeline
+	-> This process of forming this pipeline -> DevOps
+┌─────────────────────────────────────────────────────────────────────┐
+│    DevOps Culture: Breaking Down The Wall (Breaking Down Silos)     │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   ┌─────────────────────────────────────────────────────────────┐   │
+│   │                  SHARED RESPONSIBILITY                      │   │
+│   │                                                             │   │
+│   │     Development    QA/Quality    Operations    Security     │   │
+│   │     ───────────    ──────────    ──────────    ────────     │   │
+│   │         │              │             │            │         │   │
+│   │         └──────────────┴─────────────┴────────────┘         │   │
+│   │                         │                                   │   │
+│   │                         ▼                                   │   │
+│   │              ┌─────────────────────┐                        │   │
+│   │              │   CROSS-FUNCTIONAL  │                        │   │
+│   │              │       TEAM          │                        │   │
+│   │              │                     │                        │   │
+│   │              │  "You build it,     │                        │   │
+│   │              │   you run it"       │                        │   │
+│   │              │                     │                        │   │
+│   │              └─────────────────────┘                        │   │
+│   │                                                             │   │
+│   └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│   Cultural Principles:                                              │
+│   • Shared ownership of the entire lifecycle                        │
+│   • Blameless postmortems (learn from failures)                     │
+│   • Trust and psychological safety                                  │
+│   • Continuous learning and improvement                             │
+│   • Measure what matters                                            │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+
+
+What is DevOps?
+DevOps is a set of practices, cultural philosophies, and tools that 
+	increase an organization's ability to deliver applications
+	and services at high velocity.
+It combines Development (Dev) and Operations (Ops) to shorten the development lifecycle
+	while delivering features, fixes, and updates frequently.
+# It is a mindset.
+┌─────────────────────────────────────────────────────────────────────┐
+│                    DevOps Definition                                │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   DevOps = Culture + Practices + Tools                              │
+│                                                                     │
+│   ┌─────────────────────────────────────────────────────────────┐   │
+│   │                                                             │   │
+│   │   CULTURE          PRACTICES           TOOLS                │   │
+│   │   ───────          ─────────           ─────                │   │
+│   │   • Collaboration  • Continuous        • Jenkins            │   │
+│   │   • Shared         Integration         • Docker             │   │
+│   │     responsibility • Continuous        • Kubernetes         │   │
+│   │   • Trust          Delivery            • Prometheus         │   │
+│   │   • Learning from  • Infrastructure    • Terraform          │   │
+│   │     failures        as Code            • Git                │   │
+│   │   • No blame       • Monitoring        • Ansible            │   │
+│   │                    • Automation                             │   │
+│   │                                                             │   │
+│   └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│   DevOps is NOT:                                                    │
+│   ✗ Just automation                                                 │
+│   ✗ Just tools                                                      │
+│   ✗ A job title (though DevOps Engineer exists)                     │
+│   ✗ A team you hand off to                                          │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+
+┌───────────────────────────────────────────────────────────────────────┐
+│                     DevOps Lifecycle (∞ Loop)                        	│
+├───────────────────────────────────────────────────────────────────────┤
+│                                                                      	│
+│                         DEVELOPMENT                                  	│
+│              ┌─────────────────────────────┐                        	│
+│              │                             │                        	│
+│         ┌────┴────┐                   ┌────┴────┐                   	│
+│       ┌─▼─────────▼┐                 ┌▼─────────▼┐                  	│
+│       │            │                 │           │                  	│
+│   ┌───┤   PLAN     ├───┐         ┌───┤   BUILD   ├───┐              	│
+│   │   │            │   │         │   │           │   │              	│
+│   │   └────────────┘   │         │   └───────────┘   │              	│
+│   │                    │         │                   │              	│
+│   │                    │         │                   │              	│
+│   │   ┌────────────┐   │         │   ┌───────────┐   │              	│
+│   └───┤  MONITOR   ├───┘         └───┤   TEST    ├───┘              	│
+│       │            │                 │           │                   	│
+│       └──────▲─────┘                 └─────▼─────┘                   	│
+│              │                             │                        	│
+│         ┌────┴────┐                   ┌────┴────┐                   	│
+│        ┌▼─────────▼┐                 ┌▼─────────▼─┐                  	│
+│       │            │                 │            │                  	│
+│       │  OPERATE   │                 │  RELEASE   │                  	│
+│       │            │                 │            │                  	│
+│       └────────────┘                 └────────────┘                  	│
+│              │                             │                        	│
+│              └─────────────────────────────┘                        	│
+│                         OPERATIONS                                   	│
+│                                                                      	│
+│   Continuous feedback loop:                                         	│
+│   PLAN → BUILD → TEST → RELEASE → DEPLOY → OPERATE → MONITOR → PLAN	│
+│                                                                       │
+└───────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│                    DevOps Core Practices                            │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   CONTINUOUS INTEGRATION (CI)                                       │
+│   ───────────────────────────                                       │
+│   • Developers integrate code frequently (daily or more)            │
+│   • Each integration triggers automated build and tests             │
+│   • Find and fix issues quickly                                     │
+│   Tools: Jenkins, GitHub Actions, GitLab CI, CircleCI               │
+│                                                                     │
+│   CONTINUOUS DELIVERY/DEPLOYMENT (CD)                               │
+│   ────────────────────────────────────                              │
+│   • Automatically deploy every change to staging                    │
+│   • One-click (or automatic) production deployment                  │
+│   • Reduce deployment risk and time                                 │
+│   Tools: Jenkins, ArgoCD, Spinnaker, AWS CodeDeploy                 │
+│                                                                     │
+│   INFRASTRUCTURE AS CODE (IaC)                                      │
+│   ────────────────────────────                                      │
+│   • Define infrastructure in version-controlled code                │
+│   • Reproducible, consistent environments                           │
+│   • Self-documenting infrastructure                                 │
+│   Tools: Terraform, CloudFormation, Ansible, Pulumi                 │
+│                                                                     │
+│   MONITORING AND OBSERVABILITY                                      │
+│   ────────────────────────────                                      │
+│   • Collect metrics, logs, and traces                               │
+│   • Proactive alerting                                              │
+│   • Understand system behavior                                      │
+│   Tools: Prometheus, Grafana, ELK Stack, Datadog                    │
+│                                                                     │
+│   AUTOMATION                                                        │
+│   ──────────                                                        │
+│   • Automate repetitive tasks                                       │
+│   • Reduce human error                                              │
+│   • Free up time for innovation                                     │
+│   Tools: Scripts, CI/CD pipelines, ChatOps                          │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│                    Benefits of DevOps                               │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   SPEED                                                             │
+│   ─────                                                             │
+│   • Faster time to market                                           │
+│   • More frequent releases                                          │
+│   • Quick response to customer feedback                             │
+│   Metric: Deployment frequency (daily → multiple per day)           │
+│                                                                     │
+│   RELIABILITY                                                       │
+│   ───────────                                                       │
+│   • Automated testing catches issues early                          │
+│   • Consistent environments reduce "works on my machine"            │
+│   • Monitoring enables quick problem detection                      │
+│   Metric: Change failure rate, Mean time to recovery (MTTR)         │
+│                                                                     │
+│   SCALE                                                             │
+│   ─────                                                             │
+│   • Infrastructure as Code enables easy scaling                     │
+│   • Automation handles complex, at-scale operations                 │
+│   Metric: Infrastructure provisioning time                          │
+│                                                                     │
+│   COLLABORATION                                                     │
+│   ─────────────                                                     │
+│   • Shared ownership improves accountability                        │
+│   • Better communication between teams                              │
+│   • Faster feedback loops                                           │
+│   Metric: Lead time for changes                                     │
+│                                                                     │
+│   SECURITY (DevSecOps)                                              │
+│   ────────────────────                                              │
+│   • Security integrated throughout pipeline                         │
+│   • Automated security scanning                                     │
+│   • Compliance as code                                              │
+│   Metric: Vulnerabilities detected in pipeline vs production        │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+
+CODE EXAMPLES
+# Simple CI/CD Pipeline Concept
+# Conceptual pipeline stages (implemented in Jenkins on Friday)
+pipeline:
+  stages:
+    - name: Build
+      description: Compile code, create artifacts
+      tools: Maven, npm, Docker
+      
+    - name: Test
+      description: Run automated tests
+      types:
+        - Unit tests
+        - Integration tests
+        - Security scans
+      
+    - name: Deploy to Staging
+      description: Deploy to test environment
+      automated: true
+      
+    - name: Acceptance Tests
+      description: Run E2E tests in staging
+      tools: Selenium, Cypress
+      
+    - name: Deploy to Production
+      description: Release to users
+      approval: manual or automated
+      strategies:
+        - Blue-green
+        - Canary
+        - Rolling
+      
+    - name: Monitor
+      description: Track application health
+      tools: Prometheus, Grafana
+
+
+**Blameless Postmortem Template**
+# Incident Postmortem
+
+## Summary
+- **Date:** 2024-01-15
+- **Duration:** 45 minutes
+- **Impact:** 5000 users affected, checkout unavailable
+- **Severity:** High
+
+## Timeline
+- 14:00 - Deployment started
+- 14:15 - Alerts triggered (high error rate)
+- 14:20 - On-call engineer begins investigation
+- 14:35 - Root cause identified (database migration issue)
+- 14:40 - Rollback initiated
+- 14:45 - Service restored
+
+## Root Cause
+Database migration script had a bug that locked the users table.
+
+## What Went Well
+- Alerts triggered quickly
+- Team responded promptly
+- Rollback was smooth
+
+## What Could Be Improved
+- Migration script testing
+- Database lock monitoring
+- Deployment during lower traffic
+
+## Action Items
+1. Add migration testing to CI pipeline - @dev-team - Due: 2024-01-22
+2. Implement database lock alerts - @ops-team - Due: 2024-01-20
+3. Document deployment windows - @lead - Due: 2024-01-18
+
+## Lessons Learned
+Test database migrations against production-like data volumes.
+
+**Note: This is a blameless document. We focus on improving 
+systems, not blaming individuals.**
+
+===================================================================================================
+
+
+continuous-integration-delivery-deployment.md
+===================================================================================================
+WHY THIS MATTERS
+*From Code to Cloud:Mastering the Modern Deployment Pipeline*
+CI/CD is the automation backbone of DevOps. 
+It transforms manual, error-prone deployments into reliable, repeatable processes. 
+When developers commit code, automated pipelines build, test, and deploy it—sometimes dozens of times per day. 
+This week's finale on Friday covers Jenkins, the industry-standard CI/CD tool that brings these concepts to life.
+
+As a quality engineer, CI/CD directly involves you. 
+Your automated tests run in pipelines. 
+You validate that builds pass quality gates. 
+You ensure deployments meet acceptance criteria. 
+Understanding CI/CD helps you design test strategies that work within pipeline constraints and timelines.
+
+
+THE CONCEPT
+┌─────────────────────────────────────────────────────────────────────┐
+│              CI/CD: The Three Continuous Practices                  │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   CONTINUOUS INTEGRATION (CI)                                       │
+│   ───────────────────────────                                       │
+│   Developers integrate code frequently into shared repository       │
+│   Each integration is verified by automated build and tests         │
+│                                                                     │
+│   ┌────────┐ ┌────────┐ ┌────────┐                                  │
+│   │ Dev 1  │ │ Dev 2  │ │ Dev 3  │                                  │
+│   └───┬────┘ └───┬────┘ └───┬────┘                                  │
+│       │          │          │                                       │
+│       └──────────┼──────────┘                                       │
+│                  │                                                  │
+│                  ▼                                                  │
+│          ┌─────────────┐                                            │
+│          │ Main Branch │                                            │
+│          └──────┬──────┘                                            │
+│                 │                                                   │
+│                 ▼                                                   │
+│          ┌─────────────┐                                            │
+│          │   BUILD +   │ ◀── Every commit triggers                  │
+│          │    TEST     │                                            │
+│          └─────────────┘                                            │
+│                                                                     │
+│   ───────────────────────────────────────────────────────────────   │
+│                                                                     │
+│   CONTINUOUS DELIVERY (CD)                                          │
+│   ────────────────────────                                          │
+│   Code is always in a deployable state                              │
+│   One-click deployment to production (manual trigger)               │
+│                                                                     │
+│          CI Pipeline                      │  Manual   │ Production  │
+│   ┌─────────────────────┐                 │  Trigger  │             │
+│   │ Build → Test → Stage│ ──────────────▶│   🔘      │──▶ PROD     │
+│   └─────────────────────┘                 │           │             │
+│                                                                     │
+│   ───────────────────────────────────────────────────────────────   │
+│                                                                     │
+│   CONTINUOUS DEPLOYMENT (CD)                                        │
+│   ──────────────────────────                                        │
+│   Every change that passes tests deploys automatically              │
+│   No manual intervention required                                   │
+│                                                                     │
+│          CI Pipeline                     Automatic    Production    │
+│   ┌─────────────────────┐                                           │
+│   │ Build → Test → Stage│ ──────────────────────────▶ PROD          │
+│   └─────────────────────┘   (if all tests pass)                     │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│                  CI Core Principles                                 │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   1. MAINTAIN A SINGLE SOURCE REPOSITORY                            │
+│      All code in version control (Git)                              │
+│      Main branch represents latest stable code                      │
+│                                                                     │
+│   2. AUTOMATE THE BUILD                                             │
+│      One command builds everything                                  │
+│      No manual steps required                                       │
+│                                                                     │
+│   3. MAKE THE BUILD SELF-TESTING                                    │
+│      Automated tests run with every build                           │
+│      Build fails if tests fail                                      │
+│                                                                     │
+│   4. EVERYONE COMMITS TO MAINLINE EVERY DAY                         │
+│      Frequent integration (at least daily)                          │
+│      Small changes easier to debug                                  │
+│                                                                     │
+│   5. EVERY COMMIT TRIGGERS A BUILD                                  │
+│      Immediate feedback on changes                                  │
+│      Problems found quickly                                         │
+│                                                                     │
+│   6. KEEP THE BUILD FAST                                            │
+│      Target: < 10 minutes                                           │
+│      Fast feedback enables rapid iteration                          │
+│                                                                     │
+│   7. FIX BROKEN BUILDS IMMEDIATELY                                  │
+│      Broken build = top priority                                    │
+│      Don't commit on broken build                                   │
+│                                                                     │
+│   8. EVERYONE CAN SEE BUILD RESULTS                                 │
+│      Visible dashboards                                             │
+│      Transparent status                                             │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│                  Typical CI/CD Pipeline Stages                      │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   ┌───────────┐   ┌───────────┐   ┌───────────┐   ┌───────────┐     │
+│   │   CODE    │──▶│   BUILD  │──▶│   TEST    │──▶│  PACKAGE  │     │
+│   └───────────┘   └───────────┘   └───────────┘   └───────────┘     │
+│        │               │                │               │           │
+│        │               │                │               │           │
+│   ┌────▼────┐    ┌─────▼──────┐   ┌─────▼──────┐  ┌─────▼─────┐     │
+│   │Checkout │    │ Compile    │   │Unit Tests  │  │Docker     │     │
+│   │from Git │    │Dependencies│   │Integration │  │Image      │     │
+│   │         │    │Lint/Format │   │Security    │  │Artifact   │     │
+│   └─────────┘    └────────────┘   │Code Quality│  │Store      │     │
+│                                   └────────────┘  └───────────┘     │
+│                                                                     │
+│   ┌───────────┐   ┌───────────┐   ┌───────────┐   ┌───────────┐     │
+│   │  DEPLOY   │──▶│  VERIFY   │─▶│  RELEASE  │──▶│  MONITOR  │     │
+│   │  STAGING  │   │           │   │ (PROD)    │   │           │     │
+│   └───────────┘   └───────────┘   └───────────┘   └───────────┘     │
+│        │               │               │              │             │
+│        │               │               │              │             │
+│   ┌────▼────┐    ┌─────▼─────┐   ┌─────▼─────┐  ┌─────▼─────┐       │
+│   │Deploy to│    │Smoke Tests│   │Blue-Green │  │Metrics    │       │
+│   │Test Env │    │E2E Tests  │   │Canary     │  │Alerts     │       │
+│   │         │    │Performance│   │Rolling    │  │Logs       │       │
+│   └─────────┘    └───────────┘   └───────────┘  └───────────┘       │
+│                                                                     │
+│   If any stage fails → Pipeline stops → Team notified               │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│                  Testing Pyramid in CI/CD                           │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│                          ┌────────┐                                 │
+│                         ╱   E2E   ╲       Few, Slow, Expensive     │
+│                        ╱───────────╲      Run in staging           │
+│                       ╱  UI Tests   ╲                              │
+│                      ╱───────────────╲                             │
+│                     ╱  Integration    ╲   More tests               │
+│                    ╱───────────────────╲  Run after unit tests     │
+│                   ╱     API Tests       ╲                          │
+│                  ╱───────────────────────╲                         │
+│                 ╱        Unit Tests        ╲ Many, Fast, Cheap     │
+│                ╱─────────────────────────────╲ Run first           │
+│               ╱______________________________╲                     │
+│                                                                     │
+│   Pipeline Test Strategy:                                           │
+│   ─────────────────────────                                         │
+│                                                                     │
+│   BUILD STAGE:                                                      │
+│   • Unit tests (fast, comprehensive)                                │
+│   • Static code analysis                                            │
+│   • Security vulnerability scan                                     │
+│   Target: < 5 minutes                                               │
+│                                                                     │
+│   TEST STAGE:                                                       │
+│   • Integration tests                                               │
+│   • API tests                                                       │
+│   • Contract tests                                                  │
+│   Target: < 15 minutes                                              │
+│                                                                     │
+│   STAGING STAGE:                                                    │
+│   • End-to-end tests                                                │
+│   • Performance tests (basic)                                       │
+│   • Smoke tests                                                     │
+│   Target: < 30 minutes                                              │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│                    Deployment Strategies                            │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   BLUE-GREEN DEPLOYMENT                                             │
+│   ─────────────────────                                             │
+│   Two identical production environments                             │
+│                                                                     │
+│   Before:                        After:                             │
+│   ┌──────────┐ ◀─Traffic        ┌──────────┐                        │
+│   │  BLUE    │                  │  BLUE    │ (idle)                 │
+│   │  v1.0    │                  │  v1.0    │                        │
+│   └──────────┘                  └──────────┘                        │
+│   ┌──────────┐                  ┌──────────┐ ◀─Traffic              │
+│   │  GREEN   │ (idle)           │  GREEN   │                        │
+│   │          │ deploy v2.0──▶   │  v2.0    │                        │
+│   └──────────┘                  └──────────┘                        │
+│                                                                     │
+│   Pros: Instant rollback, zero downtime                             │
+│   Cons: Requires double infrastructure                              │
+│                                                                     │
+│   ───────────────────────────────────────────────────────────────   │
+│                                                                     │
+│   CANARY DEPLOYMENT                                                 │
+│   ─────────────────                                                 │
+│   Gradually shift traffic to new version                            │
+│                                                                     │
+│   Phase 1:     Phase 2:     Phase 3:     Phase 4:                   │
+│   ┌──────┐     ┌──────┐     ┌──────┐     ┌──────┐                   │
+│   │v1.0  │100% │v1.0  │90%  │v1.0  │50%  │v2.0  │100%               │
+│   │      │     │      │     │      │     │      │                   │
+│   │v2.0  │0%   │v2.0  │10%  │v2.0  │50%  │      │                   │
+│   └──────┘     └──────┘     └──────┘     └──────┘                   │
+│                                                                     │
+│   Pros: Gradual rollout, real-world testing                         │
+│   Cons: Complex routing, longer rollout                             │
+│                                                                     │
+│   ───────────────────────────────────────────────────────────────   │
+│                                                                     │
+│   ROLLING DEPLOYMENT                                                │
+│   ──────────────────                                                │
+│   Update instances one-by-one                                       │
+│                                                                     │
+│   Start:       Step 1:      Step 2:      Done:                      │
+│   [v1][v1][v1] [v2][v1][v1] [v2][v2][v1] [v2][v2][v2]               │
+│                                                                     │
+│   Pros: No extra infrastructure, gradual                            │
+│   Cons: Mixed versions during rollout, slow rollback                │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+
+Continuous Delivery vs Continuous Deployment:
+	Aspect				|	Continuous Delivery	|	Continuous Deployment
+Production deployment	|	Manual trigger		|	Automatic
+Human approval			|	Required			|	Not required
+Risk tolerance			|	Lower				|	Higher
+Deployment frequency	|	On-demand			|	Every passing build
+Best for				|	Most organizations	|	High-maturity teams
+Test requirements		|	Comprehensive		|	Extremely comprehensive
+===================================================================================================
+
+
+static-code-analysis.md (self-learning [X])
+===================================================================================================
+WHY THIS MATTERS
+*From Code to Cloud: Mastering the Modern Deployment Pipeline*
+Static code analysis examines source code without 
+	executing it, 
+	identifying bugs, 
+	security vulnerabilities, 
+	and code quality issues before they reach production. 
+In CI/CD pipelines, static analysis acts as an automated code reviewer, 
+	catching problems that might slip past human review.
+
+As a quality engineer, static analysis is a powerful ally. 
+It finds issues that are difficult to catch with traditional testing: 
+	security vulnerabilities, 
+	code smells, 
+	and maintainability problems. 
+Integrating static analysis into pipelines ensures every commit meets quality standards before deployment.
+
+
+Static Code Analysis examines source code without running it to find potential issues. 
+It's like having an automated code reviewer that checks every line against established rules and patterns.
+
+Since static code analysis occurs without code execution, it can be done before it.
+This means that it can find defects earlier. Remember that defects found earlier are less costly and easier to fix.
+
+What Static Analysis Detects:
+- Bugs
+	- null ptr dereferences
+	- array index out of bounds
+	- resource leaks (unclosed files, connections)
+	- dead code (unreachable)
+	- infinte loops
+- Security Vulnerabilities
+	- SQL injection
+	- cross-site scripting (XSS)
+	- hardcoded credentials
+	- insecure cryptography
+	- path traversal
+- Code Smells
+	- duplicated code
+	- long methods
+	- complex conditionals
+	- unused variables
+	- magic numbers
+- Style Violations
+	- inconsistent naming
+	- formatting issues
+	- missing documentation
+	- import organization
+
+┌─────────────────────────────────────────────────────────────────────┐
+│                  Static Analysis Tools by Language                  │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   MULTI-LANGUAGE PLATFORMS                                          │
+│   ────────────────────────                                          │
+│   SonarQube       Enterprise platform, 25+ languages                │
+│   CodeClimate     Quality metrics, many integrations                │
+│   Codacy          Automated code review                             │
+│                                                                     │
+│   JAVA                                                              │
+│   ────                                                              │
+│   Checkstyle      Style and formatting                              │
+│   PMD             Bug detection                                     │
+│   SpotBugs        Successor to FindBugs                             │
+│   Error Prone     Google's compile-time checker                     │
+│                                                                     │
+│   JAVASCRIPT/TYPESCRIPT                                             │
+│   ──────────────────────                                            │
+│   ESLint          Linting and style                                 │
+│   JSHint          Error detection                                   │
+│   TypeScript      Type checking (built-in)                          │
+│   Prettier        Code formatting                                   │
+│                                                                     │
+│   PYTHON                                                            │
+│   ──────                                                            │
+│   Pylint          Comprehensive linting                             │
+│   Flake8          Style guide enforcement                           │
+│   mypy            Static type checking                              │
+│   Bandit          Security analysis                                 │
+│   Black           Code formatting                                   │
+│                                                                     │
+│   SECURITY-FOCUSED                                                  │
+│   ────────────────                                                  │
+│   Snyk            Vulnerability detection                           │
+│   Trivy           Container scanning                                │
+│   Semgrep         Pattern-based analysis                            │
+│   OWASP tools     Security standards                                │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────┐
+│                    Code Quality Metrics                             │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   RELIABILITY                                                       │
+│   ───────────                                                       │
+│   Bugs found in code                                                │
+│   Rating: A (0 bugs) to E (critical bugs)                           │
+│                                                                     │
+│   SECURITY                                                          │
+│   ────────                                                          │
+│   Vulnerabilities found                                             │
+│   Rating: A (0 vulns) to E (critical vulns)                         │
+│                                                                     │
+│   MAINTAINABILITY                                                   │
+│   ───────────────                                                   │
+│   Code smells and technical debt                                    │
+│   Rating: A (<5% debt ratio) to E (>50% debt ratio)                 │
+│                                                                     │
+│   COVERAGE                                                          │
+│   ────────                                                          │
+│   Percentage of code covered by tests                               │
+│   Target: 80% or higher                                             │
+│                                                                     │
+│   DUPLICATIONS                                                      │
+│   ────────────                                                      │
+│   Percentage of duplicated code                                     │
+│   Target: < 3%                                                      │
+│                                                                     │
+│   TECHNICAL DEBT                                                    │
+│   ──────────────                                                    │
+│   Estimated time to fix all issues                                  │
+│   Measured in: hours, days                                          │
+│   Debt Ratio: debt time / development time                          │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────┐
+│              Static Analysis in CI/CD Pipeline                      │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   ┌────────┐   ┌─────────┐   ┌─────────┐   ┌─────────┐              │
+│   │ Build  │──▶│  Lint   │──▶│ Security│──▶│ Quality │──▶ ...     │
+│   └────────┘   │  Check  │   │  Scan   │   │  Gate   │              │
+│                └────┬────┘   └────┬────┘   └────┬────┘              │
+│                     │             │             │                   │
+│                     ▼             ▼             ▼                   │
+│                ┌──────────┐   ┌─────────┐   ┌───────────┐           │
+│                │ ESLint   │   │  Snyk   │   │SonarQube  │           │
+│                │ Pylint   │   │ Trivy   │   │CodeClimate│           │
+│                │Checkstyle│   │ Bandit  │   │           │           │
+│                └──────────┘   └─────────┘   └───────────┘           │
+│                                                                     │
+│   Quality Gate Example:                                             │
+│   ─────────────────────                                             │
+│   PASS if:                                                          │
+│   • No new critical bugs                                            │
+│   • No new security vulnerabilities                                 │
+│   • Code coverage >= 80% on new code                                │
+│   • Duplications < 3%                                               │
+│                                                                     │
+│   FAIL if:                                                          │
+│   • Any critical/blocker issue introduced                           │
+│   • Coverage drops below threshold                                  │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+
+# Refer to study guide for code examples
+===================================================================================================

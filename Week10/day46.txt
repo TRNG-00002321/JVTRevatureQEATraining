@@ -1,0 +1,342 @@
+01/09/2026
+QEA Training - Day 46
+
+# Mock interview -> 01/12/2026 (Monday) 
+	-> Can attend the training via MS Teams before interview slot 
+	-> Drive into office after lunch
+# 01/16/2026 onwards -> focus shifts towards final cumulative QC and final project due 01/22/2026
+# GitHub Copilot -> best AI assistant specifically for coding/ programming help -> subscription-based
+
+# https://github.com/jasdhir/TRG-2321-J/tree/main/jenkins-demo-2026-01-08
+#
+#
+
+# We will run Jenkins w/in a Docker container. However, it can run in a standalone mode.
+# With Jenkins, download the image and you are good to go.
+# Jenkins runs on port 8080
+# With a containerized Jenkins, it is much easier to clean things up when something goes wrong.
+
+jenkins-introduction.md
+===================================================================================================
+WHY THIS MATTERS
+*From Code to Cloud: Mastering the Modern Deployment Pipeline*
+Jenkins is the most widely adopted CI/CD tool in the industry, 
+automating the path from code commit to production deployment. 
+It orchestrates builds, runs tests, and deploys applications—the backbone of continuous integration. 
+When developers push code, Jenkins determines if it's ready for production.
+
+As a quality engineer, Jenkins is where your automated tests live. 
+Unit tests, integration tests, performance tests—all triggered and reported by Jenkins pipelines. 
+Understanding Jenkins means understanding how quality gates work in modern software delivery.
+
+THE CONCEPT
+Jenkins is an open-source automation server that enables 
+	continuous integration and continuous delivery (CI/CD).
+Key Capabilities:
+- Build automation (Compile, package, create artifacts)
+- Test automation (Run unit, integration, E2E tests)
+- Deployment (Deploy to any environment)
+- Scheduled tasks (Cron-like job scheduling)
+- Workflow orchestration (Pipeline as code)
+
+# Core idea of Jenkins -> automating the DevOps process
+
+Why Jenkins?
++ Free and open-source
++ Massive plugin ecosystem
++ Self-hosted (full control)
++ Language/ platform agnostic
++ Large community and documentation
++ Pipeline as code (Jenkinsfile)
+
+
+# Jenkins is typically written in a .war file
+
+Jenkins Architecture:
+┌─────────────────────────────────────────────────────────────────────┐
+│                   Jenkins Master-Agent Architecture                  │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│                        ┌─────────────────────┐                       │
+│                        │   Jenkins Master    │                       │
+│                        │   (Controller)      │                       │
+│                        │                     │                       │
+│                        │  • Schedule jobs    │                       │
+│                        │  • Web UI           │                       │
+│                        │  • Configuration    │                       │
+│                        │  • Plugin mgmt      │                       │
+│                        │  • Build dispatch   │                       │
+│                        └──────────┬──────────┘                       │
+│                                   │                                  │
+│              ┌────────────────────┼────────────────────┐            │
+│              │                    │                    │            │
+│              ▼                    ▼                    ▼            │
+│    ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐   │
+│    │   Agent 1       │  │   Agent 2       │  │   Agent 3       │   │
+│    │   (Linux)       │  │   (Windows)     │  │   (Docker)      │   │
+│    │                 │  │                 │  │                 │   │
+│    │  • Run builds   │  │  • Run builds   │  │  • Run builds   │   │
+│    │  • Execute tests│  │  • Execute tests│  │  • Execute tests│   │
+│    │  • Report back  │  │  • Report back  │  │  • Report back  │   │
+│    └─────────────────┘  └─────────────────┘  └─────────────────┘   │
+│                                                                      │
+│   MASTER RESPONSIBILITIES           AGENT RESPONSIBILITIES          │
+│   ───────────────────────           ─────────────────────           │
+│   • Scheduling builds               • Executing build steps        │
+│   • Monitoring agents               • Running tests                │
+│   • Recording results               • Deploying applications       │
+│   • Serving web interface           • Reporting status             │
+│   • Managing configuration          • Providing compute            │
+│                                                                      │
+│   NOTE: For small setups, master can also execute builds           │
+│         For production, use dedicated agents                        │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│                  Jenkins Web Interface                               │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│   ┌─────────────────────────────────────────────────────────────┐   │
+│   │  JENKINS  [Search bar                  ] 🔔 admin ▼  ?     │   │
+│   ├─────────────────────────────────────────────────────────────┤   │
+│   │ ┌──────────────┐                                            │   │
+│   │ │ Dashboard    │  BUILD QUEUE                               │   │
+│   │ │ New Item     │  └ (empty)                                 │   │
+│   │ │ People       │                                            │   │
+│   │ │ Build History│  BUILD EXECUTOR STATUS                     │   │
+│   │ │ Manage       │  Master                                    │   │
+│   │ │ My Views     │  └ Idle                                    │   │
+│   │ │ Credentials  │  Agent-Linux                               │   │
+│   │ │ New View     │  └ Building my-app #45                     │   │
+│   │ └──────────────┘                                            │   │
+│   │                                                              │   │
+│   │  All Jobs                                                    │   │
+│   │  ┌────────────────────────────────────────────────────────┐ │   │
+│   │  │ S  │ Name           │ Last Success │ Last Failure    │ │   │
+│   │  │────────────────────────────────────────────────────────│ │   │
+│   │  │ ✓  │ my-app         │ 2 hr ago     │ 3 days ago      │ │   │
+│   │  │ ✓  │ api-service    │ 1 hr ago     │ 1 week ago      │ │   │
+│   │  │ ✗  │ frontend       │ 5 hr ago     │ 30 min ago      │ │   │
+│   │  │ ◐  │ integration    │ (building)   │ 2 hr ago        │ │   │
+│   │  └────────────────────────────────────────────────────────┘ │   │
+│   │                                                              │   │
+│   │  Legend:  ✓ Success  ✗ Failure  ◐ Building  ○ Not built    │   │
+│   │                                                              │   │
+│   └─────────────────────────────────────────────────────────────┘   │
+│                                                                      │
+│   KEY SECTIONS                                                       │
+│   ────────────                                                       │
+│   Dashboard      List of all jobs and their status                 │
+│   New Item       Create jobs (Freestyle, Pipeline, etc.)           │
+│   Build History  Recent builds across all jobs                     │
+│   Manage Jenkins System configuration, plugins, security           │
+│   Credentials    Stored secrets (passwords, SSH keys, tokens)      │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
+
+
+┌─────────────────────────────────────────────────────────────────────┐
+│                    Jenkins Ecosystem                                 │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│   CORE JENKINS                                                       │
+│   ────────────                                                       │
+│   jenkins.war          The main application                        │
+│   $JENKINS_HOME        Configuration, jobs, plugins storage        │
+│                                                                      │
+│   PLUGIN CATEGORIES                                                  │
+│   ─────────────────                                                  │
+│   Source Control       Git, SVN, Mercurial                         │
+│   Build Tools          Maven, Gradle, npm, Docker                  │
+│   Testing              JUnit, TestNG, Allure                       │
+│   Notifications        Slack, Email, Teams                         │
+│   Cloud                AWS, Azure, Kubernetes                      │
+│   Security             LDAP, SAML, Role-based access              │
+│   UI                   Blue Ocean, Dashboard View                  │
+│                                                                      │
+│   RELATED TOOLS                                                      │
+│   ─────────────                                                      │
+│   Configuration as Code (JCasC)   Define Jenkins via YAML          │
+│   Job DSL                          Generate jobs programmatically  │
+│   Pipeline Shared Libraries        Reusable pipeline code          │
+│                                                                      │
+│   COMMUNITY                                                          │
+│   ─────────                                                          │
+│   jenkins.io           Official website and documentation          │
+│   plugins.jenkins.io   Plugin directory                            │
+│   issues.jenkins.io    Bug tracker                                 │
+│   community.jenkins.io Forums and discussions                      │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
+
+CODE EXAMPLES
+*Running Jenkins with Docker*
+# Pull Jenkins LTS image
+docker pull jenkins/jenkins:lts
+
+# Run Jenkins (basic)
+docker run -d \
+  --name jenkins \
+  -p 8080:8080 \
+  -p 50000:50000 \
+  jenkins/jenkins:lts
+
+# Run with persistent storage
+docker run -d \
+  --name jenkins \
+  -p 8080:8080 \
+  -p 50000:50000 \
+  -v jenkins_home:/var/jenkins_home \
+  jenkins/jenkins:lts
+
+# Get initial admin password
+docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword
+
+# Access Jenkins at http://localhost:8080
+
+
+*Docker Compose Setup*
+# docker-compose.yml
+version: '3.8'
+
+services:
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: jenkins
+    ports:
+      - "8080:8080"    # Web UI
+      - "50000:50000"  # Agent communication
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock  # Docker in Docker
+    environment:
+      - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
+    restart: unless-stopped
+
+volumes:
+  jenkins_home:
+  
+
+*Jenkins with Pre-installed Plugins*
+# Dockerfile
+FROM jenkins/jenkins:lts
+
+# Skip initial setup wizard
+ENV JAVA_OPTS -Djenkins.install.runSetupWizard=false
+
+# Install plugins
+COPY plugins.txt /usr/share/jenkins/ref/plugins.txt
+RUN jenkins-plugin-cli --plugin-file /usr/share/jenkins/ref/plugins.txt
+
+# Copy configuration
+COPY jenkins.yaml /var/jenkins_home/jenkins.yaml
+ENV CASC_JENKINS_CONFIG /var/jenkins_home/jenkins.yaml
+
+USER jenkins
+
+# plugins.txt
+git
+workflow-aggregator
+docker-workflow
+blueocean
+credentials-binding
+pipeline-stage-view
+
+
+*Jenkins Configuration as Code*
+# jenkins.yaml (JCasC)
+jenkins:
+  systemMessage: "Jenkins configured via JCasC"
+  numExecutors: 2
+  mode: NORMAL
+  
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+        - id: admin
+          password: ${JENKINS_ADMIN_PASSWORD}
+  
+  authorizationStrategy:
+    globalMatrix:
+      permissions:
+        - "Overall/Administer:admin"
+        - "Overall/Read:authenticated"
+  
+  nodes:
+    - permanent:
+        name: "linux-agent"
+        remoteFS: "/home/jenkins"
+        launcher:
+          ssh:
+            host: "agent-host"
+            credentialsId: "ssh-agent-creds"
+
+unclassified:
+  location:
+    url: http://jenkins.example.com/
+	
+	
+*Jenkins CLI Usage*
+# Download Jenkins CLI
+wget http://localhost:8080/jnlpJars/jenkins-cli.jar
+
+# List all jobs
+java -jar jenkins-cli.jar -s http://localhost:8080 \
+  -auth admin:password list-jobs
+
+# Build a job
+java -jar jenkins-cli.jar -s http://localhost:8080 \
+  -auth admin:password build my-job
+
+# Get job configuration
+java -jar jenkins-cli.jar -s http://localhost:8080 \
+  -auth admin:password get-job my-job > job-config.xml
+
+# Create job from XML
+java -jar jenkins-cli.jar -s http://localhost:8080 \
+  -auth admin:password create-job new-job < job-config.xml
+
+# Install plugin
+java -jar jenkins-cli.jar -s http://localhost:8080 \
+  -auth admin:password install-plugin git -restart
+
+# Safe restart
+java -jar jenkins-cli.jar -s http://localhost:8080 \
+  -auth admin:password safe-restart
+
+
+*REST API Examples*
+# Get Jenkins version
+curl http://localhost:8080/api/json
+
+# Get job status
+curl http://localhost:8080/job/my-job/api/json
+
+# Trigger build
+curl -X POST http://localhost:8080/job/my-job/build \
+  --user admin:password
+
+# Trigger build with parameters
+curl -X POST "http://localhost:8080/job/my-job/buildWithParameters?BRANCH=develop" \
+  --user admin:password
+
+# Get build console output
+curl http://localhost:8080/job/my-job/lastBuild/consoleText \
+  --user admin:password
+
+# Get build status
+curl http://localhost:8080/job/my-job/lastBuild/api/json?tree=result,building
+
+
+ADDITIONAL RESOURCES
+https://www.jenkins.io/doc/ - Official comprehensive documentation
+https://www.jenkins.io/doc/tutorials/ - Step-by-step guides
+https://plugins.jenkins.io/ - Searchable plugin directory
+===================================================================================================
+
+
+name.md
+===================================================================================================
+
+===================================================================================================

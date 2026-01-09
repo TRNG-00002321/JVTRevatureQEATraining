@@ -71,7 +71,7 @@ pipeline {
 
                 sh '''
                         echo "Executing JUnit tests..."
-                        mvn test -B
+                        ./mvnw test -B
                     '''
 
             }
@@ -98,7 +98,7 @@ pipeline {
 
                 sh '''
                         echo "Creating JAR package..."
-                        mvn package -DskipTests -B
+                        ./mvnw package -DskipTests -B
                         echo ""
                         echo "Build artifacts:"
                         ls -la target/*.jar

@@ -361,7 +361,7 @@ chmod -R 777 ./mvnw
 # Jenkins > Configure > General > Discard old builds
 	> Enable > Strategy > Log Rotation
 	> Max # of builds to keep > 10
-# Jenkins > Configure > General > Source Code Management
+# Jenkins > Configure > General > Source Code Management (SCM)
 	> Git > paste link to your GitHub repo here
 	# https://github.com/TRNG-00002321/calculator-app (Jasdhir's GitHub repo from today's demo)
 # Jenkins > Configure > Environment > Delete workspace before restarts > Enable
@@ -781,6 +781,20 @@ THE CONCEPT
 ===================================================================================================
 
 
+jenkinsfile.md
+===================================================================================================
+# Covered this during in-class demo
+# Review as necessary
+===================================================================================================
+
+
+jenkins-git-integration.md
+===================================================================================================
+# Covered this during in-class demo
+# Review as necessary
+===================================================================================================
+
+
 # Note (P2): will need 2 pipelines--one for each app
 # Ensure everything is working locally before pushing repo to EC2 instance
 
@@ -788,6 +802,7 @@ THE CONCEPT
 # Complete one stage at a time -> do not try implementing all stages at once!
 # Implement a stage, commit it, run it, and verify it
 	# Only then should you proceed to the next stage
+# BlueOcean -> modern UI for pipelines
 
 # GitHub repo -> jen0109 -> reference for today's Jenkins demo
 # Contains walkthroughs and setup guides for both the freestyle and pipeline demos

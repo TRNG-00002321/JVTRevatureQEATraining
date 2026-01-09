@@ -812,6 +812,7 @@ jenkins-git-integration.md
 # Jenkins Pipeline Stage View -> Jenkins plugin 
 	-> provides a real-time visualization of the different stages in a CI/CD pipeline 
 	-> can install w/in Jenkins
+		-> Manage Jenkins > System Configuration > Plugins
 
 # GitHub repo -> jen0109 -> reference for today's Jenkins demo
 # Contains walkthroughs and setup guides for both the freestyle and pipeline demos

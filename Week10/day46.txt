@@ -816,4 +816,5 @@ jenkins-git-integration.md
 
 # GitHub repo -> jen0109 -> reference for today's Jenkins demo
 # Contains walkthroughs and setup guides for both the freestyle and pipeline demos
+# Fully caught up with today's in-class demo work
 # Should be able to then do this for our P2

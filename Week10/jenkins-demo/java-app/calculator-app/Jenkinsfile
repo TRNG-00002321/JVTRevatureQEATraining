@@ -35,6 +35,7 @@ pipeline {
 
                 // For demo with local files (already in workspace)
                 // In real scenario, use: checkout scm
+                /*
                 git url: 'https://github.com/TRNG-00002321/calculator-app.git', branch: 'main'
                 sh '''
                             echo "Current directory contents:"
@@ -43,6 +44,8 @@ pipeline {
                             echo "Java source files:"
                             find . -name "*.java" -type f 2>/dev/null || true
                         '''
+                */
+                checkout scm
             }
         } // stage check out
 

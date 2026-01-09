@@ -358,6 +358,9 @@ chmod -R 777 ./mvnw
 # gives all permissions to folder ./mvnw
 # run this once before you execute your ./mvnw stuff
 
+# Jenkins > Configure > General > Discard old builds
+	> Enable > Strategy > Log Rotation
+	> Max # of builds to keep > 10
 # Jenkins > Configure > General > Source Code Management
 	> Git > paste link to your GitHub repo here
 	# https://github.com/TRNG-00002321/calculator-app (Jasdhir's GitHub repo from today's demo)
@@ -780,3 +783,12 @@ THE CONCEPT
 
 # Note (P2): will need 2 pipelines--one for each app
 # Ensure everything is working locally before pushing repo to EC2 instance
+
+# Jenkinsfile -> a good practice
+# Complete one stage at a time -> do not try implementing all stages at once!
+# Implement a stage, commit it, run it, and verify it
+	# Only then should you proceed to the next stage
+
+# GitHub repo -> jen0109 -> reference for today's Jenkins demo
+# Contains walkthroughs and setup guides for both the freestyle and pipeline demos
+# Should be able to then do this for our P2

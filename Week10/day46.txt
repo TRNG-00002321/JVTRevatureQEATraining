@@ -336,7 +336,447 @@ https://plugins.jenkins.io/ - Searchable plugin directory
 ===================================================================================================
 
 
-name.md
+# Jenkins-GitHub integration with webhooks
+# Review today's recording -> got lost during demo in-class
+# Jenkins Login details from today's demo:
+	user: admin
+	pass: theWORD$25nP67%
+# Standard practice to push Maven wrapper along with project onto GitHub repository 
+	-> so that Maven is installed for Jenkins inside Docker
+# Maven wrapper
+mvn -N wrapper:wrapper
+ 
+git add mvnw mvnw.cmd .mvn
+ 
+chmod +x mvnw
+ 
+./mvnw clean compile
+
+
+# Maven wrapper permissions
+chmod -R 777 ./mvnw
+# gives all permissions to folder ./mvnw
+# run this once before you execute your ./mvnw stuff
+
+# Jenkins > Configure > General > Source Code Management
+	> Git > paste link to your GitHub repo here
+	# https://github.com/TRNG-00002321/calculator-app (Jasdhir's GitHub repo from today's demo)
+# Jenkins > Configure > Environment > Delete workspace before restarts > Enable
+# Jenkins > Configure > Environment > Add timestamps to the Console Output
+
+# Jenkins > Configure > Environment > Build Steps > Execute shell > 
+echo "==========================================="
+echo "   Calculator Freestyle Build"
+echo "==========================================="
+echo "Build Number: $BUILD_NUMBER"
+echo "Workspace: $WORKSPACE"
+echo "Date: $(date)"
+echo "==========================================="
+ 
+# Navigate to java-app directory
+#cd java-app || exit 1
+ 
+echo "Project files:"
+ls -la
+
+
+# Another shell cmd (Execute shell) >
+<code to enable permissions for mvn; refer to recording>
+
+
+# Another shell cmd (Execute shell) >
+echo "Building application..."
+#cd java-app
+ 
+# Check Maven version
+./mvnw --version
+ 
+# Clean and compile
+./mvnw clean compile -B
+ 
+echo "Compilation successful!"	
+
+
+# Another shell cmd >
+echo "Running unit tests..."
+#cd java-app
+ 
+# Execute tests
+mvn test -B
+ 
+echo "Tests completed!"
+
+
+# Another shell cmd build step > 
+echo "Packaging application..."
+#cd java-app
+ 
+# Create JAR (skip tests - already ran)
+mvn package -DskipTests -B
+ 
+echo "Package created:"
+ls -la target/*.jar
+
+
+# Jenkins > Configure > Post-build Actions
+	> Publish JUnit test result report
+		> target/surefire-reports/*.xml
+	> Archive the artifacts
+		> target/*.jar
+	> Can add a notification that tells you when something goes wrong (could set on a trigger?)
+
+# echo "Building Docker image..."
+# Build Docker imagedocker build -t calculator-app:$BUILD_NUMBER .
+
+
+jenkins-jobs.md
 ===================================================================================================
+WHY THIS MATTERS
+*From Code to Cloud: Mastering the Modern Deployment Pipeline*
+Jobs are the fundamental unit of work in Jenkins. 
+Every build, test run, and deployment is executed as a job. 
+Understanding job types helps you choose the right approach—
+	Freestyle for simple tasks, 
+	Pipeline for complex workflows with version-controlled configuration.
+
+As a quality engineer, you'll configure jobs that run test suites, generate reports, and gate deployments. 
+Knowing how to set up, trigger, and troubleshoot jobs is essential for maintaining reliable test automation.
+
+
+┌─────────────────────────────────────────────────────────────────────┐
+│                     Jenkins Job Types                               │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   FREESTYLE PROJECT                                                 │
+│   ─────────────────                                                 │
+│   • Traditional job type                                            │
+│   • Configuration via web UI                                        │
+│   • Simple, linear build steps                                      │
+│   • Good for simple tasks                                           │
+│   • Limited reusability                                             │
+│                                                                     │
+│   Use when: Simple builds, quick setup, single-step tasks           │
+│                                                                     │
+│   ───────────────────────────────────────────────────────────────   │
+│                                                                     │
+│   PIPELINE                                                          │
+│   ────────                                                          │
+│   • Pipeline as code (Jenkinsfile)                                  │
+│   • Version controlled with source code                             │
+│   • Complex workflows with stages                                   │
+│   • Parallel execution                                              │
+│   • Reusable via shared libraries                                   │
+│                                                                     │
+│   Use when: Complex workflows, CD pipelines, team collaboration     │
+│                                                                     │
+│   ───────────────────────────────────────────────────────────────   │
+│                                                                     │
+│   MULTIBRANCH PIPELINE                                              │
+│   ────────────────────                                              │
+│   • Automatically discovers branches                                │
+│   • Creates pipeline per branch                                     │
+│   • Great for feature branch workflows                              │
+│                                                                     │
+│   Use when: Multiple branches need CI, pull request builds          │
+│                                                                     │
+│   ───────────────────────────────────────────────────────────────   │
+│                                                                     │
+│   FOLDER                                                            │
+│   ──────                                                            │
+│   • Organize jobs into groups                                       │
+│   • Shared credentials scope                                        │
+│   • Access control per folder                                       │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│               Freestyle Job Configuration                           │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   ┌─────────────────────────────────────────────────────────────┐   │
+│   │  Configure Job: my-freestyle-job                            │   │
+│   ├─────────────────────────────────────────────────────────────┤   │
+│   │                                                              │   │
+│   │  GENERAL                                                     │   │
+│   │  ───────                                                     │   │
+│   │  Description: [Build and test my application           ]    │   │
+│   │  [✓] Discard old builds                                     │   │
+│   │      Days to keep: [7  ] Max builds: [10 ]                  │   │
+│   │  [✓] GitHub project                                         │   │
+│   │      URL: [https://github.com/org/repo             ]        │   │
+│   │                                                              │   │
+│   │  SOURCE CODE MANAGEMENT                                      │   │
+│   │  ───────────────────────                                     │   │
+│   │  (○) None  (●) Git  ( ) Subversion                          │   │
+│   │  Repository URL: [git@github.com:org/repo.git       ]       │   │
+│   │  Credentials: [github-ssh-key           ▼]                  │   │
+│   │  Branch: [*/main                        ]                   │   │
+│   │                                                              │   │
+│   │  BUILD TRIGGERS                                              │   │
+│   │  ──────────────                                              │   │
+│   │  [✓] Poll SCM: [H/5 * * * *            ]                    │   │
+│   │  [ ] Build periodically                                      │   │
+│   │  [✓] GitHub hook trigger for GITScm polling                 │   │
+│   │                                                              │   │
+│   │  BUILD ENVIRONMENT                                           │   │
+│   │  ─────────────────                                           │   │
+│   │  [✓] Delete workspace before build starts                   │   │
+│   │  [✓] Add timestamps to Console Output                       │   │
+│   │                                                              │   │
+│   └─────────────────────────────────────────────────────────────┘   │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
+
 
 ===================================================================================================
+
+
+jenkins-build-triggers.md
+===================================================================================================
+WHY THIS MATTERS
+*From Code to Cloud: Mastering the Modern Deployment Pipeline*
+Build triggers determine when automation runs. 
+The right trigger strategy ensures builds happen promptly when 
+	code changes (continuous integration), on schedule for nightly tests, or on-demand for releases. 
+Wrong triggers mean either missed changes or wasted resources.
+
+As a quality engineer, you'll configure triggers for different test scenarios: 
+	unit tests on every commit, 
+	integration tests on PR merges, 
+	performance tests overnight, 
+	and release builds on demand.
+
+THE CONCEPT
+Trigger Types Overview
+┌─────────────────────────────────────────────────────────────────────┐
+│                    Build Trigger Types                               │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│   SCM POLLING                                                        │
+│   ───────────                                                        │
+│   Jenkins checks repository at intervals                            │
+│   ┌─────────────────┐       ┌─────────────────┐                    │
+│   │     Jenkins     │──────▶│   Git Server    │                    │
+│   │  (polls every   │       │  (checks for    │                    │
+│   │   5 minutes)    │◀──────│   changes)      │                    │
+│   └─────────────────┘       └─────────────────┘                    │
+│   + Simple setup                                                    │
+│   - Delay between commit and build                                 │
+│   - Wasted requests when no changes                                │
+│                                                                      │
+│   WEBHOOKS                                                           │
+│   ────────                                                           │
+│   Git server notifies Jenkins immediately                          │
+│   ┌─────────────────┐       ┌─────────────────┐                    │
+│   │   Git Server    │──────▶│     Jenkins     │                    │
+│   │ (pushes event)  │       │ (instant build) │                    │
+│   └─────────────────┘       └─────────────────┘                    │
+│   + Instant builds                                                  │
+│   + No polling overhead                                             │
+│   - Requires network access to Jenkins                             │
+│   - More setup required                                            │
+│                                                                      │
+│   SCHEDULED (Cron)                                                   │
+│   ────────────────                                                   │
+│   Builds at specific times                                          │
+│   ┌─────────────────┐                                              │
+│   │     Jenkins     │  "Every night at 2 AM"                       │
+│   │   (internal     │  "Every Monday at 9 AM"                      │
+│   │    scheduler)   │                                               │
+│   └─────────────────┘                                              │
+│   + Regular intervals                                               │
+│   + Independent of code changes                                    │
+│   Good for: Nightly builds, reports, cleanup                       │
+│                                                                      │
+│   MANUAL                                                             │
+│   ──────                                                             │
+│   Triggered by user action                                          │
+│   + Full control                                                    │
+│   + Parameters for customization                                    │
+│   Good for: Releases, deployments, on-demand tests                 │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
+
+SCM POLLING
+┌─────────────────────────────────────────────────────────────────────┐
+│                    SCM Polling Configuration                         │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│   JENKINS CRON SYNTAX                                               │
+│   ───────────────────                                               │
+│                                                                      │
+│   MINUTE  HOUR  DAY   MONTH  DAY_OF_WEEK                           │
+│     │      │     │      │        │                                  │
+│     │      │     │      │        └── 0-7 (0,7=Sunday)              │
+│     │      │     │      └─────────── 1-12                          │
+│     │      │     └────────────────── 1-31                          │
+│     │      └──────────────────────── 0-23                          │
+│     └─────────────────────────────── 0-59                          │
+│                                                                      │
+│   SPECIAL CHARACTERS                                                │
+│   ──────────────────                                                │
+│   *     Every value                                                 │
+│   H     Hash (spread load)    ◄── Jenkins-specific                 │
+│   */N   Every N intervals                                          │
+│   N-M   Range                                                       │
+│   N,M   List                                                        │
+│                                                                      │
+│   EXAMPLES                                                           │
+│   ────────                                                           │
+│   H/5 * * * *      Every 5 minutes (hashed)                        │
+│   H * * * *        Every hour (hashed minute)                      │
+│   H/15 * * * *     Every 15 minutes                                │
+│   0 * * * *        Every hour at :00                               │
+│   */10 * * * *     Every 10 minutes (exactly)                      │
+│                                                                      │
+│   WHY USE 'H' (Hash)?                                               │
+│   ───────────────────                                               │
+│   H distributes load across time to avoid all jobs                 │
+│   polling at the same moment.                                       │
+│                                                                      │
+│   H/5 * * * *  →  Job A polls at :02, :07, :12...                 │
+│   H/5 * * * *  →  Job B polls at :04, :09, :14...                 │
+│                                                                      │
+│   (Instead of all at :00, :05, :10...)                            │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
+
+Webhook Configuration
+┌─────────────────────────────────────────────────────────────────────┐
+│                    Webhook Setup                                     │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│   GITHUB WEBHOOK                                                     │
+│   ──────────────                                                     │
+│                                                                      │
+│   1. In Jenkins:                                                    │
+│      - Enable "GitHub hook trigger for GITScm polling"             │
+│      - Or use Generic Webhook Trigger plugin                       │
+│                                                                      │
+│   2. In GitHub Repository Settings → Webhooks → Add:               │
+│      ┌─────────────────────────────────────────────────────────┐   │
+│      │ Payload URL: https://jenkins.example.com/github-webhook/ │   │
+│      │ Content type: application/json                           │   │
+│      │ Secret: <webhook-secret>                                  │   │
+│      │ Events: [✓] Just the push event                          │   │
+│      │         [✓] Pull requests                                 │   │
+│      └─────────────────────────────────────────────────────────┘   │
+│                                                                      │
+│   GITLAB WEBHOOK                                                     │
+│   ──────────────                                                     │
+│   Payload URL: https://jenkins.example.com/project/job-name        │
+│   Trigger: Push events, Merge request events                       │
+│                                                                      │
+│   BITBUCKET WEBHOOK                                                  │
+│   ─────────────────                                                  │
+│   URL: https://jenkins.example.com/bitbucket-hook/                 │
+│   Events: Repository push                                           │
+│                                                                      │
+│   REQUIREMENTS                                                       │
+│   ────────────                                                       │
+│   • Jenkins must be accessible from internet (or VPN)              │
+│   • Firewall rules allowing incoming webhook requests              │
+│   • SSL certificate recommended for security                       │
+│   • Webhook secret for authentication                              │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
+
+===================================================================================================
+
+
+jenkins-pipelines-stages.md
+===================================================================================================
+# Covered this during in-class demo
+WHY THIS MATTERS
+*From Code to Cloud: Mastering the Modern Deployment Pipeline*
+Stages organize your pipepline into logical phases--build, test, deploy.
+Well-structured stages 
+	provide visibility into pipeline progress, 
+	enable parallel execution for speed, 
+	and allow conditional flows for different branches or environments.
+
+As a quality engineer, stages often represnt quality gates: unit tests, integration tests, security scans, performance tests.
+Understanding stage configuration helps you insert appropriate testing at each phase.
+
+
+THE CONCEPT
+┌─────────────────────────────────────────────────────────────────────┐
+│                    Pipeline Stage Structure                         │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   pipeline {                                                        │
+│     stages {                         ◄── Container for all stages   │
+│                                                                     │
+│       stage('Build') {               ◄── Named stage                │
+│         steps {                      ◄── What to execute            │
+│           sh 'mvn compile'                                          │
+│         }                                                           │
+│       }                                                             │
+│                                                                     │
+│       stage('Test') {                                               │
+│         when { ... }                 ◄── Conditional execution      │
+│         steps {                                                     │
+│           sh 'mvn test'                                             │
+│         }                                                           │
+│         post { ... }                 ◄── Stage-level post actions   │
+│       }                                                             │
+│                                                                     │
+│       stage('Deploy') {                                             │
+│         input { ... }                ◄── Manual approval            │
+│         steps {                                                     │
+│           sh './deploy.sh'                                          │
+│         }                                                           │
+│       }                                                             │
+│                                                                     │
+│     }                                                               │
+│   }                                                                 │
+│                                                                     │
+│   BLUE OCEAN VISUALIZATION                                          │
+│   ────────────────────────                                          │
+│   ┌────────┐    ┌────────┐     ┌────────┐                           │
+│   │ Build  │───▶│  Test  │───▶│ Deploy │                           │
+│   │   ✓    │    │   ✓    │    │   ◐    │                           │
+│   │  45s   │    │  2m    │     │ waiting│                           │
+│   └────────┘    └────────┘     └────────┘                           │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│                    Parallel Stage Execution                         │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   Run multiple stages simultaneously to reduce build time           │
+│                                                                     │
+│   SEQUENTIAL (Slow)                  PARALLEL (Fast)                │
+│   ─────────────────                  ──────────────                 │
+│   ┌─────┐                           ┌─────┐                         │
+│   │Build│ 2min                      │Build│ 2min                    │
+│   └──┬──┘                           └──┬──┘                         │
+│      ▼                                 │                            │
+│   ┌──────┐                      ┌──────┴──────┐                     │
+│   │ Unit │ 3min                 │             │                     │
+│   │ Test │                      ▼             ▼                     │
+│   └──┬───┘                   ┌──────┐      ┌──────┐                 │
+│      ▼                       │ Unit │      │ E2E  │  3min           │
+│   ┌──────┐                   │ Test │      │ Test │  (parallel)     │
+│   │ E2E  │ 5min              └──┬───┘      └──┬───┘                 │
+│   │ Test │                      │             │                     │
+│   └──┬───┘                      └──────┬──────┘                     │
+│      ▼                                 ▼                            │
+│   ┌──────┐                         ┌──────┐                         │
+│   │Deploy│ 1min                    │Deploy│ 1min                    │
+│   └──────┘                         └──────┘                         │
+│                                                                     │
+│   Total: 11 min               Total: 6 min                          │
+│                                                                     │
+│   BEST FOR PARALLELIZATION                                          │
+│   ────────────────────────                                          │
+│   • Independent test suites (unit, integration, E2E)                │
+│   • Multi-platform builds (Linux, Windows, Mac)                     │
+│   • Multi-environment deployments                                   │
+│   • Static analysis + tests                                         │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+===================================================================================================
+
+
+# Note (P2): will need 2 pipelines--one for each app
+# Ensure everything is working locally before pushing repo to EC2 instance

@@ -785,6 +785,12 @@ jenkinsfile.md
 ===================================================================================================
 # Covered this during in-class demo
 # Review as necessary
+
+# Jenkins (calc-pipeline from demo) > Configure > Pipeline > Definition > Pipeline from SCM
+	> SCM > Git 
+		> Repositories > GitHub repo URL
+		> Branches to build > Branch Specifier > */main (usually)
+	> Script Path > path/to/Jenkinsfile
 ===================================================================================================
 
 
@@ -802,7 +808,10 @@ jenkins-git-integration.md
 # Complete one stage at a time -> do not try implementing all stages at once!
 # Implement a stage, commit it, run it, and verify it
 	# Only then should you proceed to the next stage
-# BlueOcean -> modern UI for pipelines
+# BlueOcean -> modern UI for pipelines -> Jenkins plugin -> can install w/in Jenkins
+# Jenkins Pipeline Stage View -> Jenkins plugin 
+	-> provides a real-time visualization of the different stages in a CI/CD pipeline 
+	-> can install w/in Jenkins
 
 # GitHub repo -> jen0109 -> reference for today's Jenkins demo
 # Contains walkthroughs and setup guides for both the freestyle and pipeline demos

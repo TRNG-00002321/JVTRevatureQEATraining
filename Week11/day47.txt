@@ -524,3 +524,20 @@ It provides a powerful interface for querying, visualizing, and alerting on metr
 
 # Prometheus scrapes metrics
 # Grafana provides visualization for those metrics
+
+[X] Get an account for GitHub Copilot -> have it running in your IDE
+# Our interviews are scheduled for 01/15 -> this Thurs
+# We have a HackerRank coding challenge scheduled for 01/14 -> this Wed -> ~3.5 hours -> 4-5 coding projects (pick 1)
+	-> Python
+	-> Java
+	-> Selenium
+	-> SQL
+	-> etc.
+# Jasdhir not introducing new lecture material until this Friday (01/16)
+# Prompt engineering -> self-study []
+# We are expected to be leveraging AI agents
+# GitHub Copilot -> free tier available -> 50 requests per month?
+
+# Tomorrow -> 01/13/2026 -> Shall be remote
+# Until Friday (01/16) -> Keep MS Teams open 24/7
+# TRG-2321-S/week11-ai -> self-study -> good to have -> by Friday (01/16)

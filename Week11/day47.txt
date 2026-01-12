@@ -104,127 +104,127 @@ Time-Series Database Concept
 └─────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    Prometheus Metric Types                           │
+│                    Prometheus Metric Types                          │
 ├─────────────────────────────────────────────────────────────────────┤
-│                                                                      │
-│   COUNTER                                                            │
-│   ───────                                                            │
-│   Cumulative metric that only increases (or resets to zero)        │
-│                                                                      │
-│   Use for: Total requests, errors, bytes sent                      │
+│                                                                     │
+│   COUNTER                                                           │
+│   ───────                                                           │
+│   Cumulative metric that only increases (or resets to zero)         │
+│                                                                     │
+│   Use for: Total requests, errors, bytes sent                       │
 │   Example: http_requests_total = 10542                              │
-│                                                                      │
-│   Value: 100 → 150 → 200 → 0 (reset) → 50 → 100                   │
-│                                                                      │
+│                                                                     │
+│   Value: 100 → 150 → 200 → 0 (reset) → 50 → 100                     │
+│                                                                     │
 │   ───────────────────────────────────────────────────────────────   │
-│                                                                      │
-│   GAUGE                                                              │
-│   ─────                                                              │
+│                                                                     │
+│   GAUGE                                                             │
+│   ─────                                                             │
 │   Current value that can go up or down                              │
-│                                                                      │
-│   Use for: Temperature, memory usage, queue size                   │
-│   Example: node_memory_usage_bytes = 1073741824                    │
-│                                                                      │
-│   Value: 45% → 62% → 58% → 70% → 55%                              │
-│                                                                      │
+│                                                                     │
+│   Use for: Temperature, memory usage, queue size                    │
+│   Example: node_memory_usage_bytes = 1073741824                     │
+│                                                                     │
+│   Value: 45% → 62% → 58% → 70% → 55%                                │
+│                                                                     │
 │   ───────────────────────────────────────────────────────────────   │
-│                                                                      │
-│   HISTOGRAM                                                          │
-│   ─────────                                                          │
+│                                                                     │
+│   HISTOGRAM                                                         │
+│   ─────────                                                         │
 │   Samples observations into configurable buckets                    │
-│                                                                      │
-│   Use for: Request durations, response sizes                       │
-│   Example: http_request_duration_seconds_bucket{le="0.5"} = 95    │
-│            (95% of requests completed in <= 0.5 seconds)           │
-│                                                                      │
+│                                                                     │
+│   Use for: Request durations, response sizes                        │
+│   Example: http_request_duration_seconds_bucket{le="0.5"} = 95      │
+│            (95% of requests completed in <= 0.5 seconds)            │
+│                                                                     │
 │   ───────────────────────────────────────────────────────────────   │
-│                                                                      │
-│   SUMMARY                                                            │
-│   ───────                                                            │
+│                                                                     │
+│   SUMMARY                                                           │
+│   ───────                                                           │
 │   Similar to histogram, provides quantiles directly                 │
-│                                                                      │
-│   Use for: Pre-calculated percentiles                              │
-│   Example: http_request_duration_seconds{quantile="0.95"} = 0.45  │
-│            (95th percentile response time is 0.45 seconds)         │
-│                                                                      │
+│                                                                     │
+│   Use for: Pre-calculated percentiles                               │
+│   Example: http_request_duration_seconds{quantile="0.95"} = 0.45    │
+│            (95th percentile response time is 0.45 seconds)          │
+│                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────┐
-│                  Prometheus Architecture                             │
+│                  Prometheus Architecture                            │
 ├─────────────────────────────────────────────────────────────────────┤
-│                                                                      │
+│                                                                     │
 │   TARGETS (Applications, Exporters)                                 │
-│   ┌────────────┐ ┌────────────┐ ┌────────────┐                     │
-│   │ App Server │ │ Node       │ │ Database   │                     │
-│   │ /metrics   │ │ Exporter   │ │ Exporter   │                     │
-│   └─────┬──────┘ └─────┬──────┘ └─────┬──────┘                     │
+│   ┌────────────┐ ┌────────────┐ ┌────────────┐                      │
+│   │ App Server │ │ Node       │ │ Database   │                      │
+│   │ /metrics   │ │ Exporter   │ │ Exporter   │                      │
+│   └─────┬──────┘ └─────┬──────┘ └─────┬──────┘                      │
 │         │              │              │                             │
 │         │   HTTP scrape (pull)        │                             │
 │         └──────────────┼──────────────┘                             │
 │                        │                                            │
 │                        ▼                                            │
 │   ┌─────────────────────────────────────────────────────────────┐   │
-│   │                   PROMETHEUS SERVER                          │   │
-│   │                                                              │   │
-│   │  ┌────────────────┐  ┌────────────────┐  ┌───────────────┐ │   │
-│   │  │   Retrieval    │  │   TSDB         │  │   HTTP        │ │   │
-│   │  │   (Scraper)    │──│   (Storage)    │──│   Server      │ │   │
-│   │  └────────────────┘  └────────────────┘  └───────────────┘ │   │
-│   │          │                                      │          │   │
-│   │          │           ┌────────────────┐         │          │   │
-│   │          └──────────▶│   Alert        │         │          │   │
-│   │                      │   Manager      │◀────────┘          │   │
-│   │                      └───────┬────────┘                    │   │
+│   │                   PROMETHEUS SERVER                         │   │
+│   │                                                             │   │
+│   │  ┌────────────────┐  ┌────────────────┐  ┌───────────────┐  │   │
+│   │  │   Retrieval    │  │   TSDB         │  │   HTTP        │  │   │
+│   │  │   (Scraper)    │──│   (Storage)    │──│   Server      │  │   │
+│   │  └────────────────┘  └────────────────┘  └───────────────┘  │   │
+│   │          │                                      │           │   │
+│   │          │           ┌────────────────┐         │           │   │
+│   │          └──────────▶│   Alert        │         │           │   │
+│   │                      │   Manager      │◀────────┘           │   │
+│   │                      └───────┬────────┘                     │   │
 │   └──────────────────────────────┼──────────────────────────────┘   │
 │                                  │                                  │
 │                                  ▼                                  │
-│   ┌────────────────────────────────────────────────────────────┐   │
-│   │  NOTIFICATIONS: Email, Slack, PagerDuty, Webhook           │   │
-│   └────────────────────────────────────────────────────────────┘   │
-│                                                                      │
-│   Also: Grafana connects to Prometheus HTTP API for visualization  │
-│                                                                      │
+│   ┌────────────────────────────────────────────────────────────┐    │
+│   │  NOTIFICATIONS: Email, Slack, PagerDuty, Webhook           │    │
+│   └────────────────────────────────────────────────────────────┘    │
+│                                                                     │
+│   Also: Grafana connects to Prometheus HTTP API for visualization   │
+│                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────┐
-│              Pull-Based vs Push-Based Monitoring                     │
+│              Pull-Based vs Push-Based Monitoring                    │
 ├─────────────────────────────────────────────────────────────────────┤
-│                                                                      │
+│                                                                     │
 │   PULL-BASED (Prometheus)                                           │
 │   ───────────────────────                                           │
-│                                                                      │
+│                                                                     │
 │   Prometheus ──────────────────▶ Target                             │
-│              HTTP GET /metrics                                       │
-│                                                                      │
-│   Pros:                                                              │
-│   ✓ Easy to detect if target is down                               │
-│   ✓ Can manually inspect metrics endpoints                         │
-│   ✓ Easier scaling (add targets, not receiver capacity)           │
-│   ✓ Service discovery integration                                  │
-│                                                                      │
-│   Cons:                                                              │
-│   ✗ Requires network access to targets                             │
-│   ✗ Short-lived jobs need Pushgateway                             │
-│                                                                      │
+│              HTTP GET /metrics                                      │
+│                                                                     │
+│   Pros:                                                             │
+│   ✓ Easy to detect if target is down                                │
+│   ✓ Can manually inspect metrics endpoints                          │
+│   ✓ Easier scaling (add targets, not receiver capacity)             │
+│   ✓ Service discovery integration                                   │
+│                                                                     │
+│   Cons:                                                             │
+│   ✗ Requires network access to targets                              │
+│   ✗ Short-lived jobs need Pushgateway                               │
+│                                                                     │
 │   ───────────────────────────────────────────────────────────────   │
-│                                                                      │
+│                                                                     │
 │   PUSH-BASED (e.g., Graphite, InfluxDB)                             │
 │   ─────────────────────────────────────                             │
-│                                                                      │
+│                                                                     │
 │   Application ──────────────────▶ Monitoring Server                 │
-│                  Send metrics                                        │
-│                                                                      │
-│   Pros:                                                              │
-│   ✓ Works through firewalls                                        │
-│   ✓ Good for short-lived jobs                                      │
-│   ✓ Application controls when to send                              │
-│                                                                      │
-│   Cons:                                                              │
-│   ✗ Harder to detect silent failures                               │
-│   ✗ Can overwhelm receiver under load                              │
-│                                                                      │
+│                  Send metrics                                       │
+│                                                                     │
+│   Pros:                                                             │
+│   ✓ Works through firewalls                                         │
+│   ✓ Good for short-lived jobs                                       │
+│   ✓ Application controls when to send                               │
+│                                                                     │
+│   Cons:                                                             │
+│   ✗ Harder to detect silent failures                                │
+│   ✗ Can overwhelm receiver under load                               │
+│                                                                     │
 │   Prometheus uses Pushgateway for short-lived jobs                  │
-│                                                                      │
+│                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 
 
@@ -520,3 +520,7 @@ It provides a powerful interface for querying, visualizing, and alerting on metr
 
 # TODO: Catch up on notes; refer to recording
 ===================================================================================================
+
+
+# Prometheus scrapes metrics
+# Grafana provides visualization for those metrics

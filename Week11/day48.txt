@@ -7,11 +7,13 @@ QEA Training - Day 48
 	# Jasdhir said I did good
 	# Demonstrated understanding of all covered topics
 	# Need some touching up of certain topics -> answers lacked depth at times
-	# Topics to Review: Unit Testing, BDD, Cucumber, Behave, Selenium, Test Automation
+	# Topics to Review: STLC steps, Unit Testing, BDD, Cucumber, Behave, Selenium, Test Automation
 # HackerRank today
 # Stand up call at 13:30 over MS Teams
 # HackerRank challenge tomorrow (01/14) will be in-person -> be in office by 9:00 CT sharp!
 
+# Idea for mock interview was coverage, for breadth.
+# For actual client interview, go for depth -> explanations like in QCs
 # After HackerRank tomorrow, we'll take lunch at 13:00 CT.
 # In-browser IDE -> https://vscode.dev
 # 3.5 hours for whole HackerRank tomorrow -> time is not blocked btwn ?s

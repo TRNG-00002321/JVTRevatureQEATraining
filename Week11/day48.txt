@@ -1,0 +1,11 @@
+01/13/2026
+QEA Training - Day 48
+
+# Remote today, no lecture
+# Mock Interview Feedback:
+	# Score: 3/5
+	# Demonstrated understanding of all covered topics
+	# Need some touching up of certain topics -> answers lacked depth
+	# Topics to Review: Unit Testing, BDD, Cucumber, Behave, Selenium, Test Automation
+# HackerRank today
+# Stand up call at 13:30 over MS Teams

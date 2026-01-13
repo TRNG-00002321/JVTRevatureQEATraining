@@ -4,8 +4,10 @@ QEA Training - Day 48
 # Remote today, no lecture
 # Mock Interview Feedback:
 	# Score: 3/5
+	# Jasdhir said I did good
 	# Demonstrated understanding of all covered topics
 	# Need some touching up of certain topics -> answers lacked depth
 	# Topics to Review: Unit Testing, BDD, Cucumber, Behave, Selenium, Test Automation
 # HackerRank today
 # Stand up call at 13:30 over MS Teams
+# HackerRank challenge tomorrow (01/14) will be in-person -> be in office by 9:00 CT sharp!

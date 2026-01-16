@@ -5,3 +5,15 @@ QEA Training - Day 50
 # No class today so just prepped for interview
 
 # My Thoughts on the Interview
+"My interview went swimmingly. 
+The interviewer mostly covered fundamental testing concepts and DevOps. 
+I was also instructed to write out my basic flow of logic for Selenium and trivial string operations in Java and Python. 
+The interview was mostly structured like a conversation in which the interviewer directed the subject 
+towards topics that allowed me to demonstrate my understanding of the underlying knowledge. 
+The onus was on me to create the link between the concepts that I learned and the scenarios we were discussing. 
+Overall, I think I performed well. 
+One thing that I need to work on is developing follow-up questions since 
+interviewers tend to learn quite a bit about an individual based on the types of questions they ask at the end of an interview. 
+Those are my thoughts. 
+It has been a pleasure reading through everyone else's messages. 
+I am pleased that we can each confidently say that we did a good job!"

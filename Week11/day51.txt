@@ -4,8 +4,179 @@ QEA Training - Day 51
 # Mon 01/19/2026 -> MLK Day -> Revature holiday (we're free!)
 # Wed 01/21/2026 -> cumulative QC
 # Fri 01/23/2026 -> P2 presentations
-	> My group needs to go first
-	> Business formal b/c Cognizant people shall be attending!
+	> My group needs to go first (after trainer's demo presentation)
+	> Business formal b/c Cognizant people (the BU--business unit--team) shall be attending!
+	> Aim for 40 mins total each group -> first 25 mins for P1 work, 15 mins for P2 work
+
+# Client Interview Results (from yesterday, 01/15/2026): Out the 18 of us...
+	# 12 selected
+	# 3 selected w/ re-interviews
+	# 3 not selected (will be marketed elsewhere)
 
 [] Tuesday 01/20/2026 -> be done self-studying w/ all the written material from week 11 study guides
 	> Relevant notes shall be here
+	
+# P2 Personal To-Do:
+[] Jenkins piplines -> due 01/20/2026
+[] Jira board mgmt
+	
+prompt-engineering-introduction.md
+====================================================================================================
+Prompt engineering is the practice of designing & refining inputs to AI language models to elicit accurate, relevant, & useful outputs.
+Think of it as learning to communicate with a highly capable but very literal assistant who takes your instructions exactly as given.
+
+Effective Prompt Structure:
+1) Context
+2) Instruction
+3) Constraints
+4) Format
+5) Examples (optional but good)
+┌─────────────────────────────────────────────────────────────────────────┐
+│                        EFFECTIVE PROMPT STRUCTURE                        │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  1. CONTEXT         What background does the AI need to understand?      │
+│     ──────────────────────────────────────────────────────────────────   │
+│     "You are helping a QA engineer test an e-commerce checkout..."       │
+│                                                                          │
+│  2. INSTRUCTION     What specific task should it perform?                │
+│     ──────────────────────────────────────────────────────────────────   │
+│     "Generate test cases for the payment processing module."             │
+│                                                                          │
+│  3. CONSTRAINTS     What limitations or requirements apply?              │
+│     ──────────────────────────────────────────────────────────────────   │
+│     "Focus on credit card payments only. Exclude cryptocurrency."        │
+│                                                                          │
+│  4. FORMAT          How should the output be structured?                 │
+│     ──────────────────────────────────────────────────────────────────   │
+│     "Present as a numbered list with Test ID, Steps, Expected Result."   │
+│                                                                          │
+│  5. EXAMPLES        What does good output look like? (Optional)          │
+│     ──────────────────────────────────────────────────────────────────   │
+│     "Example: TC-001: Valid Visa payment with $100.00 amount..."         │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+
+Prompt engineering is rarely one-and-done: expect to interate.
+┌─────────────────────────────────────────────────────────────────────────┐
+│                      PROMPT REFINEMENT CYCLE                            │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│    ┌──────────┐     ┌──────────┐      ┌──────────┐     ┌──────────┐     │
+│    │ Write    │     │ Submit   │      │ Evaluate │     │ Refine   │     │
+│    │ Initial  │────▶│ to AI    │────▶│ Output   │────▶│ Prompt   │──┐  │
+│    │ Prompt   │     │          │      │          │     │          │  │  │
+│    └──────────┘     └──────────┘      └──────────┘     └──────────┘  │  │
+│         ▲                                                            │  │
+│         └────────────────────────────────────────────────────────────┘  │
+│                                                                         │
+│    Iteration 1: Too vague → Add specificity                             │
+│    Iteration 2: Wrong format → Specify structure                        │
+│    Iteration 3: Missing edge cases → Add constraints                    │
+│    Iteration 4: Perfect! → Save as template                             │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+
+
+COMMON PROMPTING MISTAKES
+Mistake 1: Being Too Vague
+❌ BAD: "Test this"
+✅ GOOD: "Generate functional test cases for this user registration 
+        endpoint, focusing on input validation for email and password fields"
+Mistake 2: Overloading with Multiple Tasks
+❌ BAD: "Create test cases, write the automation code, set up the test 
+        environment, and document everything"
+✅ GOOD: Break into separate prompts:
+        1. "Create test cases for..."
+        2. "Based on these test cases, write pytest automation..."
+        3. "Create setup documentation for..."
+Mistake 3: Assuming Context
+❌ BAD: "Why is it failing?" 
+        (AI has no idea what "it" refers to)
+✅ GOOD: "This pytest test is failing with assertion error. The test 
+        checks that user.balance returns 100 after deposit(100), but 
+        it returns 0. Here's the code: [code]. Why might this fail?"
+Mistake 4: Ignoring the Output Format
+❌ BAD: "Give me test data"
+        (Returns paragraph of text you need to parse)
+✅ GOOD: "Generate test data as a JSON array with objects containing 
+        'username', 'email', 'age' fields"
+Mistake 5: Not Iterating
+❌ BAD: Accept mediocre first response
+✅ GOOD: "That's helpful, but please also include negative test cases 
+        for invalid inputs and add expected error messages"
+
+
+TOKEN CONSIDERATIONS AND CONTEXT WINDOWS
+Understanding tokens and context windows helps you work within AI limitations.
+
+WHAT ARE TOKENS?
+Tokens are the units AI models use to process text—roughly 3-4 characters or about 0.75 words in English.
+
+"Hello, how are you?" 
+≈ 5 tokens
+"Generate comprehensive test cases for user authentication"
+≈ 8 tokens
+A typical prompt + response might use 500-2000 tokens
+
+WHAT IS A CONTEXT WINDOW?
+The context window is the total amount of text (prompt + response) the AI can consider at once.
+┌─────────────────────────────────────────────────────────────────┐
+│                     CONTEXT WINDOW (e.g., 8K tokens)            │
+├─────────────────────────────────────────────────────────────────┤
+│  ┌──────────────────────┐  ┌──────────────────────────────┐     │
+│  │    YOUR PROMPT       │  │     AI RESPONSE              │     │
+│  │    (~2K tokens)      │  │    (~4K tokens available)    │     │
+│  │                      │  │                              │     │
+│  │  - Context           │  │   (Space for detailed        │     │
+│  │  - Instructions      │  │    test cases, analysis,     │     │
+│  │  - Code snippets     │  │    documentation)            │     │
+│  │  - Examples          │  │                              │     │
+│  └──────────────────────┘  └──────────────────────────────┘     │
+│                                                                 │
+│  Total: Prompt + Response must fit within context window        │
+└─────────────────────────────────────────────────────────────────┘
+Practical Implications:
+- Long code files: Break them into relevant sections rather than pasting entire files
+- Conversation history: The AI might "forget" early parts of long conversations
+- Detailed outputs: Request chunked responses for lengthy documentation
+- Cost consideration: More tokens = higher API costs (when using paid services)
+Tip for large inputs:
+"I have a 2000-line Python file. I'll share the authentication module 
+(lines 150-300) which contains the functionality I need test cases for:
+[paste relevant section]
+Please focus your analysis on this section only."
+
+# Can refer back to study guide for more examples
+# Important concept to learn: advantages & disadvantages of prompting approaches (e.g., zero-shot prompting, few-shot-prompting, etc.)
+====================================================================================================
+
+
+zero-shot-prompting.md
+====================================================================================================
+
+====================================================================================================
+
+
+few-shot-prompting.md
+====================================================================================================
+
+====================================================================================================
+
+
+chain-of-thought-prompting.md
+====================================================================================================
+
+====================================================================================================
+
+
+model-considerations.md
+====================================================================================================
+
+====================================================================================================
+
+
+ai-enhanced-workflow.md
+====================================================================================================
+
+====================================================================================================

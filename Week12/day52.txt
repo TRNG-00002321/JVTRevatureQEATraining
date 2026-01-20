@@ -412,3 +412,5 @@ Mitigation:
 - Explicitly test for differential performance across groups
 - Include fairness in your definition of "done"
 ====================================================================================================
+
+# If we're snowed in on Friday (01/23/2026), we'll do the presentations fully remote.

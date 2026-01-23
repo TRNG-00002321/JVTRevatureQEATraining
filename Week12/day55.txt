@@ -7,3 +7,19 @@ QEA Training - Day 55
 # Afterwards, listened to the other groups present.
 # Got more Cognizant onboarding emails -> gotta look at those
 # My work laptop just got shipped. -> woot woot!
+
+# Project Presentation Feedback
+	# Remember to clean code before merging to main
+	# E2E testing -> implement POM (page object model) pattern -> makes writing E2E scenario steps easier
+	# Be sure to integrate performance testing into the CI/CD pipeline IRL
+	# EC2 auto-scaling could've been utilized to better emulate a deployment environment
+		-> could've also helped with performance testing w/in the CI/CD pipeline
+		-> need to learn to configure this
+	# Cognizant workers attending the meeting were happy with our collective work
+
+# Returned usual remote meeting room after presentations
+# Trainer thanked everyone again and said his goodbyes.
+# 4 of us ended up not being selected for this position -> will be marketed elsewhere
+
+# Everyone said their piece and we ended for today.
+# End of the beginning -> a new journey starts anew!
